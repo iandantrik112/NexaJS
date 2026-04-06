@@ -1,101 +1,222 @@
-# Nexa Eletron
+# Terminal Nexa — pintasan keyboard & perintah proyek
 
-Aplikasi desktop **Electron** yang menjalankan **Express** sebagai server lokal dan memuat antarmuka **Nexa** (SPA) di jendela Chromium. Cocok untuk pengembangan dan distribusi satu paket: backend ringan + frontend modul `assets/modules` + halaman di `templates/`.
+Dokumentasi navigasi input, riwayat perintah, serta perintah `**start**`, `**dev**`, `**stop**`, `**restart**`, `**instal**`, `**modules**`, dan `**npm instal**` 
 
-## Arsitektur singkat
+## Riwayat perintah (↑ mundur, ↓ maju)
 
-| Lapisan | Peran |
-|--------|--------|
-| **`electron/`** | Modul desktop: **`main.js`** (proses utama), **`preload.js`** (IPC ke renderer), **`csp.js`** (CSP untuk injeksi `server.js`). **`package.json` → `main`** menunjuk ke **`electron.js`** di akar proyek; berkas itu memuat **`electron/main.js`** dari **`electron/`** (dev) atau **`resources/electron/`** (build). |
-| **server.js** | Server Express (ESM): static file, injeksi CSP + `window.__NEXA_ENDPOINT__` di awal `<head>`, API contoh, fallback SPA. |
-| **`electron/electronShell.js`** | Shell desktop: opsi jendela utama + template menu klik kanan native (satu folder dengan `main.js`). |
-| **App.js** | Entry SPA NexaRoute: routing, worker, service worker (opsional). |
-| **templates/** | Halaman per rute Nexa. |
-| **`electron/components/`** | Handler renderer untuk item menu konteks (ESM); disajikan sebagai **`/nexa-context/*`** lewat **`server.js`**. |
+Setelah Anda menjalankan perintah (Enter), teks tersebut **disimpan di riwayat sesi** (memori halaman; tidak otomatis tersimpan ke disk setelah refresh).
 
-Alur dev: `npm run dev` → Electron menjalankan `server.js` → memuat URL dari `config.js` → renderer mengeksekusi `App.js` dari `index.html`.
 
-## Prasyarat
+| Tombol             | Fungsi                                                                                   |
+| ------------------ | ---------------------------------------------------------------------------------------- |
+| **↑** (Arrow Up)   | Pindah ke perintah **sebelumnya** yang pernah diketik (mundur dalam riwayat).            |
+| **↓** (Arrow Down) | Pindah ke perintah **berikutnya**; di ujung bawah riwayat, baris input dikosongkan lagi. |
 
-- **Node.js** (versi yang didukung oleh dependensi proyek; LTS disarankan)
-- **npm**
 
-## Instalasi
+**Catatan:**
 
-```bash
-npm install
-```
+- Riwayat hanya aktif pada baris input biasa (prompt `NEXA$` atau path `...>`). Saat mode **terisolasi** (misalnya prompt rahasia atau alur khusus), navigasi ↑/↓ bisa tidak dipakai agar tidak mengganggu.
+- Riwayat diisi setiap kali baris perintah dikirim dengan Enter (termasuk perintah yang salah / *Command Not found*).
 
-## Menjalankan
+## Pelengkapan perintah (Tab)
 
-| Perintah | Keterangan |
-|----------|------------|
-| `npm run dev` | Electron + **electronmon**: jalankan **sekali**, biarkan proses tetap jalan. Perubahan file disimpan → pemantau memicu reload otomatis (lihat **Hot reload** di bawah). |
-| `npm start` | Electron **tanpa** pemantau file — setelah edit, refresh jendela sendiri (F5 / menu konteks **Refresh**). |
-| `npm run server` | Hanya server Express (`node server.js`), berguna untuk uji di browser. |
-| `npm run stop` | Membebaskan port default script (`kill-port` — sesuaikan port jika berbeda). |
-| `npm run build` | Paket installer Windows (NSIS) lewat **electron-builder** → keluaran di folder `dist/`. |
-| `npm run pack` | Build tanpa installer (folder `dist` untuk inspeksi). |
 
-### Hot reload (`npm run dev`)
+| Tombol  | Fungsi                                                                                                                                                   |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Tab** | Jika ada **satu** perintah yang cocok dengan awalan yang diketik, nama perintah dilengkapi. Jika ada **beberapa** kecocokan, daftar singkat ditampilkan. |
 
-1. **Satu terminal** — setelah `npm run dev`, jangan mengulang `npm start` kecuali Anda menutup app.
-2. **Simpan file** (Ctrl+S) — **electronmon** mendeteksi perubahan di proyek (kecuali `node_modules`, `dist`).
-3. **File proses utama** (`electron/main.js`, `electron/preload.js`) — aplikasi **restart** penuh.
-4. **Halaman & aset** (`templates/`, `assets/`, `electron/components/`, `App.js`, `index.html`, dll.) — isi jendela **reload** (cache HTTP diabaikan).
-5. **Logika server** (`server.js`) — proses Express ikut dimuat di proses utama; jika Anda mengubah route/middleware API, **tutup jendela app lalu jalankan lagi** `npm run dev` (atau sentuh `electron/main.js` agar restart penuh).
 
-**Penting:** URL dan port aplikasi harus selaras dengan **`config.js`** (lihat di bawah). Jika port untuk Express sudah dipakai proses lain, server gagal start — hentikan proses tersebut atau ubah URL di konfigurasi.
+## Kontrol lain di area terminal
 
-## Konfigurasi
 
-### `config.js`
+| Kombinasi  | Fungsi                                                   |
+| ---------- | -------------------------------------------------------- |
+| **Ctrl+C** | Menghentikan eksekusi / alur saat ini (`stop`).          |
+| **Ctrl+R** | Mengosongkan isi terminal (layar) dan menghentikan alur. |
 
-- Dipakai oleh **`server.js`** untuk `listen` dan `baseUrl`.
-- Ke browser **tidak** di-expose sebagai file `/config.js`; nilai disuntik ke **`window.__NEXA_ENDPOINT__`** saat memuat `index.html`.
-- Sesuaikan **`url`** (mis. `http://localhost:3007`) agar sama dengan port yang didengarkan server dan dengan yang dibuka Electron.
 
-### Ikon & build Windows
+## Jendela terminal (modal)
 
-- **`package.json` → `build.win.icon`**: ikon installer dan sumber ikon jendela di dev (`electron/main.js` membaca path yang sama).
-- **`appId`**: `com.eletron.nexa` — dipakai untuk pengelompokan taskbar di Windows (`setAppUserModelId`).
+Jika terminal dibuka sebagai modal (bukan halaman penuh):
 
-### Variabel lingkungan (opsional)
 
-| Variabel | Arti |
-|----------|------|
-| `ELECTRON_DEV=1` | Membuka DevTools saat jendela siap. |
-| `ELECTRON_SINGLE_INSTANCE=1` | Satu instance; instance kedua memfokuskan jendela. |
-| `ELECTRON_DISABLE_GPU=0` | Jangan matikan akselerasi GPU (default: GPU dimatikan lewat switch). |
-| `ELECTRON_DISABLE_HTTP_CACHE=0` | Izinkan cache HTTP Chromium (default: cache disk dimatikan untuk dev). |
-| `NEXA_DEV_NO_CACHE=0` | Bersama `NODE_ENV=production`, header no-cache untuk `/templates/`, `/assets/`, `/nexa-context/`, `/App.js` bisa dinonaktifkan. |
-| `NODE_ENV=production` | Mode produksi untuk server (perilaku cache, dll.). |
+| Kombinasi                        | Fungsi         |
+| -------------------------------- | -------------- |
+| **Ctrl+Z** atau **Ctrl+Shift+Z** | Buka terminal  |
+| **Ctrl+Shift+X**                 | Tutup terminal |
 
-## File penting
 
-| File | Fungsi |
-|------|--------|
-| `electron.js` | Entry Electron di akar proyek; memuat **`electron/main.js`** dari `electron/` (dev) atau **`resources/electron/`** (installer). Build memakai **`asar: true`** ( **`assets/modules`** dll. di dalam **`app.asar`** ). |
-| `electron/main.js` | Proses utama: `BrowserWindow`, menu konteks, membersihkan cache session, `require` **`index.js`** (server). |
-| `electron/csp.js` | Membangun string CSP; diimpor oleh **`server.js`**. |
-| `server.js` | Express: middleware, static root, `/assets`, **`/nexa-context/`** → `electron/components/`, API `/api/*`, blokir **`/electron/`** (keamanan; bukan modul menu). |
-| `electron/preload.js` | `contextBridge`: menu konteks (`electronAPI.onContextMenuClick`, dll.). |
-| `electron/electronShell.js` | Shell aplikasi: `mainWindowLayout` + `buildContextMenuTemplate` (ESM; di dev dimuat ulang tiap klik kanan / jendela baru). |
-| `index.html` | Shell SPA; `<base href="/">`; memuat `Nexa.js` dan `App.js`. |
-| `App.js` | `NXUI.Page` — rute, endpoint; import **`/nexa-context/index.js`**; listener IPC menu konteks memanggil **`components(role)`**. |
+Ketik `**shortcuts`** untuk daftar ringkas pintasan dan beberapa perintah yang sering dipakai.
 
-## Menu konteks & `electron/components`
+---
 
-- Item menu yang mengirim **`context-menu-clicked`** (dari template di **`electron/electronShell.js`**) diterima di **`App.js`** lewat **`window.electronAPI.onContextMenuClick`**.
-- **`electron/components/index.js`** memuat dinamis **`./<role>.js`** (mis. `nexaTerminal` → `nexaTerminal.js`); modul di-fetch dari URL **`/nexa-context/`** (bukan path **`/electron/`** mentah).
-- Menambah handler: berkas baru di **`electron/components/<role>.js`** mengekspor fungsi bernama sama dengan **`role`**, lalu kirim **`role`** itu dari template menu di **`electron/electronShell.js`**.
+## Navigasi folder (`cd`, `home`, `pwd`, `ls`)
 
-## Build & keamanan
 
-- **electron-builder** mengemas **`resources/app.asar`** ( **`assets/modules`**, **`templates`**, **`index.js`**, dll.). Folder proses utama **`electron/`** tetap di **`extraResources`**. Ikona & metadata di **`package.json` → `build`**.
-- Pola **`build.files`** mengecualikan banyak file dari paket; pastikan aset yang diperlukan tidak terkecualikan secara tidak sengaja.
-- Server menolak melayani nama file sensitif di root URL (mis. `server.js`, `config.js`, `package.json`, `.env`).
+| Perintah                             | Fungsi                                                                        |
+| ------------------------------------ | ----------------------------------------------------------------------------- |
+| `**cd D:\path**`                     | Set **cwd** (direktori aktif virtual) untuk prompt path dan perintah proyek.  |
+| `**cd ~`** / `**cd @**` / `**home**` | Reset prompt ke `**NEXA$**` (tanpa cwd).                                      |
+| `**pwd**`                            | Menampilkan cwd saat ini.                                                     |
+| `**ls**`                             | Di Electron dengan cwd: daftar isi folder cwd di disk; lainnya daftar contoh. |
 
-## Lisensi
 
-MIT (lihat `package.json`).
+---
+
+## Port default proyek (bukan port Nexa)
+
+Prompt `**start**` dan `**dev**` memakai **port default** agar tidak bentrok dengan URL Nexa di bilah alamat:
+
+- Jika origin lokal (`127.0.0.1`, `localhost`, `::1`): **port Nexa + 100** (dibatasi sampai 65535; jika bentrok, disesuaikan).
+- Selain itu: **4000**.
+
+Anda selalu bisa mengisi port manual di prompt, atau memakai `**dev 5500`** untuk melewati prompt.
+
+---
+
+## Perintah `start`
+
+Gunakan setelah `**cd**` ke folder proyek.
+
+### `start dev`
+
+**Sama persis dengan `dev`** — alur “tanpa wajib `.htaccess`”: mendeteksi folder (Electron-only, `server.js`, atau static), lalu menjalankan mode yang sesuai (termasuk `**npm run dev**` untuk proyek yang hanya punya `**electron.js**` tanpa `**server.js**`).
+
+### `start` (tanpa argumen) di folder **hanya Electron**
+
+Jika di **cwd** ada `**electron.js`** dan **tidak** ada `**server.js`**, `**start**` memakai **jalur singkat**: menjalankan `**npm run dev`** (setara perilaku dev untuk kasus itu), dengan pesan ringkas. Log proses tampil di konsol Electron (mis. awalan `[nexa-npm-dev]`).
+
+### Alur `start` umum (setelah pengecekan di atas)
+
+1. Memanggil Electron untuk mengecek `**.htaccess**` di **cwd**.
+2. **Jika ada `.htaccess`** — mode “proyek Apache-style”: diminta **port** (Enter = default di atas), `**startStaticServe`** melayani folder di `**127.0.0.1:<port>**`, browser dibuka ke URL itu.
+3. **Jika tidak ada `.htaccess`** — dibaca isi folder:
+  - Ada `**server.js**` — mode **Node**: `node server.js` dengan `**PORT`** = port pilihan; browser ke URL lokal proyek (bukan halaman Nexa).
+  - Ada `**electron.js**` saja — sudah ditangani **jalur singkat** di atas (return lebih awal).
+  - **Tidak ada** ketiganya (`.htaccess`, `server.js`, `electron.js`) — pesan **“Server tidak ditemukan”** dan saran memakai `**dev [port]`** untuk folder statis tanpa penanda itu.
+
+### `start <url>`
+
+Contoh: `**start http://127.0.0.1:3007**` — lewati prompt port; URL dipakai untuk membuka browser dan, bila URL HTTP lokal ke `127.0.0.1` / `localhost`, memicu server internal lewat `**startStaticServe**` sesuai root folder.
+
+---
+
+## Perintah `dev`
+
+- `**dev**` = `**start dev**` (satu implementasi bersama di renderer).
+- `**dev [port]**` — port opsional; jika tidak diberikan, prompt memakai **port default proyek** (lihat bagian di atas).
+
+Perilaku menurut isi folder:
+
+
+| Isi cwd (ringkas)               | Perilaku utama                                                                                              |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `electron.js` tanpa `server.js` | `**npm run dev`** (aplikasi desktop Electron folder itu)                                                    |
+| `server.js`                     | Static serve / `**node server.js**` sesuai implementasi main (mode `node`), lalu buka browser ke URL proyek |
+| Folder statis / campuran        | Express static di proses Electron + buka browser                                                            |
+
+
+Tidak perlu menjalankan `http-server` manual untuk kasus yang ditangani Nexa; aturan `**.htaccess**` tidak dipakai di cabang `**dev**` (beda dengan `**start**` yang pertama-tama mengecek `.htaccess`).
+
+---
+
+## Perintah `instal` dan `install`
+
+Menyalin **isi penuh** subfolder `**web`**, `**node**`, atau `**eletron**` dari repositori **NexaJS** (arsip ZIP GitHub) ke **cwd** (bukan subfolder baru di dalam cwd).
+
+
+| Contoh                                       | Arti                                                     |
+| -------------------------------------------- | -------------------------------------------------------- |
+| `**instal web`**                             | Paket **web**, branch **main** (terbaru default).        |
+| `**instal web@v1.0.0`**                      | Paket **web**, tag `**v1.0.0`**.                         |
+| `**instal node**`                            | Paket **node**.                                          |
+| `**instal electron`** / `**instal eletron**` | Paket **eletron** di repo (nama folder repo: `eletron`). |
+
+
+- `**install`** — alias ejaan Inggris, perilaku sama dengan `**instal**`.
+- Wajib `**cd**` ke folder tujuan; berkas dengan nama sama di cwd akan tertimpa.
+- Saat unduhan/ekstraksi berjalan, tampil **progres visual** (komponen `**NexaNpm`**: bar, spinner, fase teks). **Tidak menampilkan URL** di UI progres.
+- Setelah sukses: pesan hijau mis. **“Sukses menginstal NexaJS untuk …”** (tanpa baris “Sumber” / URL).
+- Baris progres dihapus dari DOM setelah selesai agar **tidak meninggalkan baris kosong** di riwayat.
+
+---
+
+## Perintah `modules`
+
+Hanya memperbarui `**assets/modules`** proyek Anda dari jalur `**{web\|node\|eletron}/assets/modules**` di arsip NexaJS yang sama.
+
+
+| Contoh                   | Tujuan di disk                                                  |
+| ------------------------ | --------------------------------------------------------------- |
+| `**modules web**`        | `**cwd/assets/modules**` ← isi `**web/assets/modules**` (main). |
+| `**modules web@v1.0.0**` | Sama, dari tag yang diminta.                                    |
+| `**modules node**`       | Dari `**node/assets/modules**`.                                 |
+| `**modules electron**`   | Dari `**eletron/assets/modules**`.                              |
+
+
+Folder `**assets/modules**` dibuat jika belum ada; isi disalin rekursif (merge / timpa nama sama). Progres UI memakai prefiks `**modules:**` dan fase yang menyesuaikan `**assets/modules**`.
+
+---
+
+## Perintah `npm instal` dan `npm install`
+
+Menjalankan `**npm install**` sekali di **cwd** (mengisi `**node_modules`** dari `**package.json**`).
+
+- Bentuk yang didukung: `**npm instal**` atau `**npm install**` (subperintah wajib: `instal` / `install`).
+- Membutuhkan `**package.json**` di cwd.
+- Progres visual `**NexaNpm**` (prefiks `**npm:**`); detail log npm di **konsol Electron** dengan awalan `**[nexa-npm-install]`**.
+- Sukses: pesan hijau mis. **“npm install selesai.”**
+- Baris progres dihapus setelah selesai (tanpa baris kosong).
+
+**Urutan tipikal** setelah `**instal node`** / `**instal electron**`: `**npm instal**`, lalu `**start**` / `**dev**` jika relevan.
+
+---
+
+## Progres UI 
+
+- Dipakai untuk `**instal**`, `**modules**`, dan `**npm instal**`.
+- Stylesheet `**npm.css**` dimuat lewat `**NXUI.NexaStylesheet.Dom**` bila tersedia.
+- Interval animasi dihentikan lewat `**destroy()**` setelah operasi selesai.
+
+---
+
+## `stop` dan `restart`
+
+
+| Perintah           | Fungsi                                                                                                                        |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `**stop**`         | Menghentikan **semua** server static / proses terkait yang dikelola terminal (sesuai `**stopStaticServe`** di main).          |
+| `**stop 4000**`    | Hanya menghentikan server di **port 4000**.                                                                                   |
+| `**stop npm`**     | Menghentikan `**npm run dev**` yang terikat **folder cwd** saat ini (henti per-root proyek).                                  |
+| `**restart`**      | Meminta **port**, lalu **stop + start** ulang untuk server di port itu (root dari server yang jalan atau **cwd** jika perlu). |
+| `**restart 4000`** | Restart langsung di port **4000**.                                                                                            |
+
+
+---
+
+## Perintah lain (ringkas)
+
+
+| Perintah                   | Fungsi                                         |
+| -------------------------- | ---------------------------------------------- |
+| `**help`**                 | Daftar perintah dan deskripsi singkat.         |
+| `**clear**` / `**cls**`    | Kosongkan isi layar terminal.                  |
+| `**date**`                 | Waktu saat ini.                                |
+| `**whoami**`               | Nama pengguna baris perintah.                  |
+| `**login**` / `**logout**` | Alur autentikasi (sesuai integrasi aplikasi).  |
+| `**user**`                 | Informasi akses pengguna (jika data tersedia). |
+
+
+---
+
+## Hubungan Express, Electron, dan browser
+
+- **Express** di aplikasi Nexa/Electron dijalankan dari `**index.js`** root (static, SPA, API) — ini **terpisah** dari server “folder proyek” yang Anda hidupkan lewat `**start` / `dev`**.
+- `**config.js**` mengatur URL / port **aplikasi Nexa**; jangan menyamakan port itu dengan **port proyek** di terminal kecuali Anda sengaja mengatur demikian.
+- File `**.htaccess`** menandai proyek yang biasa di-serve **Apache**; di stack Node, aturan setara biasanya di `**index.js`** / middleware.
+- Untuk melihat **Nexa** di browser: jalankan `**npm start`** atau `**node index.js**` dari root Nexa, lalu buka URL di `**config.js**`.
+
+---
+
+
+
