@@ -1,0 +1,138 @@
+@import url("../modules/Nexa.css");
+
+@import url("../fonts/google.css");
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+      /* Palet selaras hero referensi: putih + abu + aksen biru (ilustrasi isometrik) */
+      --nx-readme-accent: #2563eb;
+      --nx-readme-accent-soft: #eff6ff;
+      --nx-readme-accent-dark: #1d4ed8;
+      --nx-readme-accent-deep: #1e40af;
+      --nx-readme-highlight: #60a5fa;
+      --nx-readme-note-bg: #eff6ff;
+      --nx-readme-bg: #f9fafb;
+      --nx-readme-surface: #ffffff;
+      --nx-readme-text: #111827;
+      --nx-readme-muted: #4b5563;
+      --nx-readme-code-bg: #0f1413;
+      --nx-readme-code-bar: #1a2422;
+      --nx-readme-radius: 16px;
+      --nx-readme-shadow: 0 4px 24px rgba(15, 23, 42, 0.06);
+      --nx-readme-shadow-lg: 0 10px 40px rgba(15, 23, 42, 0.06);
+      /* Padding horizontal selaras bilah atas (.nx-readme-topnav-inner) */
+      --nx-readme-page-gutter-x: clamp(1rem, 4vw, 2.5rem);
+      font-family: 'Source Sans 3', system-ui, sans-serif;
+      color: var(--nx-readme-text);
+      line-height: 1.65;
+      background: var(--nx-readme-bg);
+      margin: 0;
+      width: 100%;
+      max-width: 100%;
+      /* Offset nav dipindah ke .nx-readme-supaya tidak ada jarak abu-abu antara nav dan hero */
+      padding-top: 0;
+      padding-bottom: 0rem;
+      padding-left: var(--nx-readme-page-gutter-x);
+      padding-right: var(--nx-readme-page-gutter-x);
+}
+/* Splash / beranda: ikon + teks, tengah layar */
+#main .main-splash {
+  min-height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  text-align: center;
+  padding: 1rem;
+}
+
+#main .main-splash__icon {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  display: block;
+}
+
+#main .main-splash__headlines {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+#main .main-splash__welcome {
+  font-size: clamp(1.35rem, 3.5vw, 1.85rem);
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+/* Lencana versi — selaras ide .nx-readme-hero-version (theme index) */
+#main .main-splash__version {
+  display: inline-block;
+  font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  margin-left: 0.45rem;
+  padding: 0.2rem 0.55rem;
+  vertical-align: 0.15em;
+  border: 1px solid #d1d5db;
+  border-radius: 999px;
+  color: #374151;
+  background: #f9fafb;
+}
+
+/* Lead hero — padat nilai, seperti .nx-readme-hero-lead */
+#main .main-splash__lead {
+  margin: 0;
+  max-width: 36rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--nx-readme-muted, #4b5563);
+}
+
+#main .main-splash__docs {
+  margin-top: 0.25rem;
+  max-width: 32rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+#main .main-splash__docs-title {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--nx-readme-text, #111827);
+}
+
+#main .main-splash__docs-desc {
+  margin: 0;
+  line-height: 1.55;
+  color: var(--nx-readme-muted, #4b5563);
+  font-size: 0.95rem;
+}
+
+#main .main-splash__hint {
+  margin: 0;
+  line-height: 1.55;
+  color: var(--nx-readme-muted, #4b5563);
+  font-size: 0.9rem;
+}
+
+#main .main-splash__docs a,
+#main .main-splash__hint a {
+  color: var(--nx-readme-accent-dark, #1d4ed8);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+#main .main-splash__docs a:hover,
+#main .main-splash__hint a:hover {
+  text-decoration: underline;
+}

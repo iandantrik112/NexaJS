@@ -1,0 +1,96 @@
+{
+  "name": "eletron-nexa",
+  "version": "1.0.6",
+  "description": "",
+  "private": true,
+  "main": "electron.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electronmon .",
+    "start:node": "electron .",
+    "dev:node": "electronmon .",
+    "server": "node index.js",
+    "stop": "kill-port 3007",
+    "clean": "node electron/clean-dist.js",
+    "prebuild": "node electron/kill-nexa-packaged.js",
+    "build": "electron-builder",
+    "build:fresh": "node electron/build-fresh.js",
+    "pack": "electron-builder --dir"
+  },
+  "keywords": [
+    "electron",
+    "express",
+    "desktop"
+  ],
+  "author": "",
+  "license": "MIT",
+  "electronmon": {
+    "patterns": ["!dist", "!dist/**"]
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.17",
+    "cors": "^2.8.6",
+    "express": "^4.22.1"
+  },
+  "devDependencies": {
+    "chokidar": "^3.6.0",
+    "cross-env": "^7.0.3",
+    "electron": "^29.4.6",
+    "electron-builder": "^24.6.4",
+    "electronmon": "^2.0.4",
+    "kill-port": "^2.0.1"
+  },
+  "build": {
+    "appId": "com.eletron.nexa",
+    "productName": "NexaEletron",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "**/*",
+      "!electron/**",
+      "!scripts/**",
+      "electron/csp.js",
+      "electron/components/**/*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin",
+      "!**/*.{iml,o,hprof,orig,pyc,pyo,rbc,swp,csproj,sln,xproj}",
+      "!.editorconfig",
+      "!**/._*",
+      "!**/{.DS_Store,.git,.hg,.svn,CVS,RCS,SCCS,.gitignore,.gitattributes}",
+      "!**/{__pycache__,thumbs.db,.flowconfig,.idea,.vs,.nyc_output}",
+      "!**/{appveyor.yml,.travis.yml,circle.yml}",
+      "!**/{npm-debug.log,yarn.lock,.yarn-integrity,.yarn-metadata.json}",
+      "!page/**/*.md",
+      "!**/*.md"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/images/icon.png"
+    },
+    "nsis": {
+      "include": "electron/build/installer.nsh",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "NexaEletron",
+      "artifactName": "NexaEletron-Setup-${version}.${ext}",
+      "perMachine": false,
+      "allowElevation": true
+    },
+    "compression": "maximum",
+    "asar": true,
+    "extraResources": [
+      {
+        "from": "electron",
+        "to": "electron",
+        "filter": ["**/*", "!build/**", "!clean-dist.js", "!components/**"]
+      }
+    ]
+  }
+}

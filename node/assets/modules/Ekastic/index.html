@@ -1,0 +1,64 @@
+<a wf- href=""></a>
+<ul>
+	<li></li>
+</ul>
+<div class="nx-row pull-ring">
+    <div class="nx-col-12">
+        <!-- Full width content -->
+    </div>
+</div>
+<style>
+   .asa{
+      align-re: ;
+      right: ;
+   }
+</style>
+<select name="" id="input" class="form-control bg-secondary" required="required">
+	<option value=""></option>
+</select>
+
+bagaimana menjadikan ini sebagai  select option
+
+let tempalate = '<select onchange="nx.addJoinTabel(this.value)">';
+
+store.data[tabel].variables.forEach((row) => {
+  tempalate += `<option value="${row}">${row}</option>`;
+  console.log(row);
+});
+
+tempalate += '</select>';
+   const data = {
+      nama: "Abdul Maskhur",
+      usia: 30,
+      pekerjaan: "Developer",
+      hobi: ["Coding", "Membaca", "Musik"]
+    };
+
+    const container = document.getElementById('report-container');
+    const viewer = new NXUI.JSONViewer(container, { data: data });
+
+<a></a>
+<div></div>
+
+<style type="text/css">
+   
+   as{
+      width: 100%;
+      background-color: #fff;
+   }
+</style>
+<div></div>
+<a onclick="selectDataType('table','nexaStore','demo_demo_NX_279283707314106_single_1760935481594_995')" href="javascript:void(0);">Install</a>
+
+// Initialize dengan TFOOT enabled
+const tabel = new EkasticTabel({
+    containerSelector: '#dataContainer',
+    enableTfoot: true,  // ✅ Aktifkan
+    tfootOptions: {
+        type: 'summary',      // Summary, totals, atau custom
+        style: 'highlighted'   // Default, highlighted, atau sticky
+    }
+});
+
+// Init dengan SDK
+await tabel.init({ id: 'table_id' });

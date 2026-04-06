@@ -1,0 +1,77 @@
+<style>
+  .exam-sheet {
+    font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+    max-width: 36rem;
+    margin: 0 auto;
+    padding: 1.25rem 0;
+  }
+  .exam-sheet h2 {
+    font-size: 1.125rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 1rem;
+    color: #0f172a;
+  }
+  .exam-user-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+  .exam-user-list .baris {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.65rem;
+    background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+  }
+  .exam-user-list .baris span:first-of-type {
+    font-weight: 600;
+    color: #0f172a;
+  }
+  .exam-user-list .baris span:last-of-type {
+    color: #64748b;
+    font-size: 0.9em;
+  }
+  /* Bar pagination NexaForge (tombol .page-link dihasilkan JS) */
+  .exam-sheet .pagination .page-item .page-link {
+    padding: 6px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #0f172a;
+  }
+  .exam-sheet .pagination .page-item.active .page-link {
+    background: #0f172a;
+    color: #fff;
+    border-color: #0f172a;
+  }
+  .exam-sheet .pagination .page-item.disabled .page-link {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+</style>
+<section class="exam-sheet">
+  <h2>{title}</h2>
+  <p class="exam-lead" style="margin:0 0 1rem;color:#64748b;font-size:0.95rem;">{description}</p>
+  <p style="margin:0 0 0.75rem;color:#475569;font-size:0.85rem;">Sumber data: <code>Storage().model("demo")</code> + <code>NexaForge.hydrateStorage</code> (lihat <code>docs/NexaForge.md</code>).</p>
+  <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:0 0 1rem;">
+    <input type="search" id="exam-user-search" placeholder="Cari nama / email…" autocomplete="off"
+      style="flex:1;min-width:200px;padding:8px 12px;border:1px solid #ccc;border-radius:6px;">
+  </div>
+  <div class="exam-user-list">
+    <div id="daftar-user" NexaForge="user">
+      <div class="baris">
+        <span>{user.nama}</span><span aria-hidden="true">—</span><span>{user.email}</span>
+      </div>
+    </div>
+  </div>
+  <ul id="exam-user-pagination" class="pagination" style="list-style:none;flex-wrap:wrap;gap:4px;padding:0;margin:12px 0 0;"></ul>
+  <p id="pageInfo" style="margin-top:8px;color:#64748b;font-size:0.9rem;">
+    Halaman <span id="currentPage">1</span> dari <span id="totalPages">1</span> · <span id="totalItems">0</span> item
+  </p>
+</section>
