@@ -3,6 +3,7 @@ import cors from 'cors';
 import path from 'path';
 import fs from 'fs/promises';
 import { fileURLToPath, pathToFileURL } from 'url';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import config from './config.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -200,6 +201,35 @@ app.post('/api/users', (req, res) => {
     },
   });
 });
+
+/**
+ * Browser memakai urlApi yang sudah di-rewrite ke origin lokal (lihat buildClientEndpointPayload).
+ * Rute /api yang tidak ada di Express ini diteruskan ke backend di config.urlApi agar tidak 404.
+ */
+function getApiUpstreamOrigin() {
+  const raw = config.urlApi;
+  if (typeof raw !== 'string' || !raw.startsWith('http')) {
+    return null;
+  }
+  try {
+    const u = new URL(raw);
+    return `${u.protocol}//${u.host}`;
+  } catch {
+    return null;
+  }
+}
+
+const apiUpstream = getApiUpstreamOrigin();
+if (apiUpstream) {
+  app.use(
+    '/api',
+    createProxyMiddleware({
+      target: apiUpstream,
+      changeOrigin: true,
+      secure: false,
+    }),
+  );
+}
 
 app.get('/health', (req, res) => {
   res.json({ status: 'healthy', uptime: process.uptime() });

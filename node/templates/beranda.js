@@ -33,15 +33,8 @@ export async function beranda(page, route) {
             <h1 class="main-splash__welcome">NexaJS Framework</h1>
           </div>
           <p class="main-splash__lead">
-            Bangun aplikasi web modern dengan routing SPA, worker, dan pola NexaUI —
-            satu tempat untuk struktur yang rapi dan siap dikembangkan.
+         Platform web modern dalam satu tempat untuk struktur yang rapi dan siap dikembangkan.
           </p>
-          <p class="main-splash__hint">Contoh tautan:</p>
-          <ul class="main-splash__nav">
-            <li><a href="/beranda" id="nav-home">Beranda</a></li>
-            <li><a href="/about" id="nav-about">About</a></li>
-            <li><a href="/blog" id="nav-blog">Blog</a></li>
-          </ul>
         </div>
         `;
     // }

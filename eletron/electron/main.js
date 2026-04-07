@@ -75,6 +75,8 @@ const DEFAULT_MAIN_WINDOW_LAYOUT = {
   height: 800,
   minWidth: 400,
   minHeight: 300,
+  /** false = tidak pasang menu klik kanan kustom + cegah menu default Chromium */
+  ContextMenu: true,
 };
 
 const MAIN_WINDOW_LAYOUT_KEYS = [
@@ -105,6 +107,9 @@ function normalizeMainWindowLayout(mod) {
   if (!raw || typeof raw !== 'object') return base;
   for (const k of MAIN_WINDOW_LAYOUT_KEYS) {
     if (raw[k] !== undefined) base[k] = raw[k];
+  }
+  if (raw.ContextMenu !== undefined) {
+    base.ContextMenu = Boolean(raw.ContextMenu);
   }
   return base;
 }
@@ -293,10 +298,14 @@ function showAboutDialog() {
   });
 }
 
-/** Menu klik kanan: template di electronShell.js */
-function attachPageContextMenu() {
+/** Menu klik kanan: template di electronShell.js (mati jika mainWindowLayout.ContextMenu === false). */
+function attachPageContextMenu(enabled) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
-  mainWindow.webContents.on('context-menu', async (_event, _params) => {
+  mainWindow.webContents.on('context-menu', async (event, _params) => {
+    if (!enabled) {
+      event.preventDefault();
+      return;
+    }
     try {
       const builder = await getContextMenuBuilder();
       const template = builder({
@@ -370,9 +379,10 @@ async function createWindow(startServer, getServerConfig) {
   }
 
   const layout = await getMainWindowLayout();
+  const { ContextMenu: contextMenuEnabled = true, ...winLayout } = layout;
 
   mainWindow = new BrowserWindow({
-    ...layout,
+    ...winLayout,
     show: false,
     ...(windowIcon ? { icon: windowIcon } : {}),
     webPreferences: {
@@ -385,7 +395,7 @@ async function createWindow(startServer, getServerConfig) {
   });
 
   Menu.setApplicationMenu(null);
-  attachPageContextMenu();
+  attachPageContextMenu(contextMenuEnabled);
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();

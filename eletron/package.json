@@ -1,6 +1,6 @@
 {
-  "name": "eletron-nexa",
-  "version": "1.0.6",
+  "name": "nexa-eletron",
+  "version": "1.0.0",
   "description": "",
   "private": true,
   "main": "electron.js",
@@ -25,12 +25,16 @@
   "author": "",
   "license": "MIT",
   "electronmon": {
-    "patterns": ["!dist", "!dist/**"]
+    "patterns": [
+      "!dist",
+      "!dist/**"
+    ]
   },
   "dependencies": {
     "adm-zip": "^0.5.17",
     "cors": "^2.8.6",
-    "express": "^4.22.1"
+    "express": "^4.22.1",
+    "firebase": "^9.23.0"
   },
   "devDependencies": {
     "chokidar": "^3.6.0",
@@ -42,7 +46,7 @@
   },
   "build": {
     "appId": "com.eletron.nexa",
-    "productName": "NexaEletron",
+    "productName": "Nexa Eletron",
     "directories": {
       "output": "dist"
     },
@@ -78,8 +82,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "NexaEletron",
-      "artifactName": "NexaEletron-Setup-${version}.${ext}",
+      "shortcutName": "Nexa Eletron",
+      "artifactName": "Setup-${version}.${ext}",
       "perMachine": false,
       "allowElevation": true
     },
@@ -89,7 +93,12 @@
       {
         "from": "electron",
         "to": "electron",
-        "filter": ["**/*", "!build/**", "!clean-dist.js", "!components/**"]
+        "filter": [
+          "**/*",
+          "!build/**",
+          "!clean-dist.js",
+          "!components/**"
+        ]
       }
     ]
   }

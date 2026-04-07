@@ -1,18 +1,15 @@
 /** Hanya untuk Node (index.js). Browser dapat endpoint lewat window.__NEXA_ENDPOINT__ di HTML — GET /config.js diblokir. */
 const config = { 
   url: "http://localhost:8003",
-  urlApi: "http://localhost:/api",
-  drive: "http://localhost/assets/drive",
-  typicode: "https://jsonplaceholder.typicode.com/photos",
-  firebaseConfig: {
-    apiKey: "AIzaSyA0XUCGzsK7hhg8NmxisslthTeOU93dORA",
-    authDomain: "nexaui-86863.firebaseapp.com",
-    databaseURL: "https://nexaui-86863-default-rtdb.firebaseio.com",
-    projectId: "nexaui-86863",
-    storageBucket: "nexaui-86863.firebasestorage.app",
-    messagingSenderId: "1034885626532",
-    appId: "1:1034885626532:web:64272a0e491f944dd04431",
-  },
+  urlApi: "http://localhost:/api",        //  url jika menggunakan drive backend Nexa Dom Framework
+  drive: "http://localhost/assets/drive", // url jika menggunakan drive backend Nexa Dom Framework
+  typicode: "https://jsonplaceholder.typicode.com/photos",// url typicode backend umum baca dokuentasi NXUI.Storage().api(row, body)
+  firebaseConfig:false, // jika tidak menggunakan firebase backend maka isi dengan false
+  // Baca dokumentasi NXUI.Inisiasi: App.js
+  // sesuaikan dengan backend yang digunakan degan nama yan kamu butuhkan dan cek di NEXA.apikamu
+  // variabel apikamu:'http://localhost:/api_kamu';
+  // variabel apidrive_kamu:'http://localhost/assets/drive_kamu';
+
 };
 
 export default config;

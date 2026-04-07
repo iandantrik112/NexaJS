@@ -1,6 +1,6 @@
 import "./assets/modules/Nexa.js";
 import config from "./config.js";
-const req = new NXUI.Page({
+const req = new NXUI.Tatiye({
   /** Base app + API + endpoint tambahan (multi-API) → NEXA.url, NEXA.apiBase, NEXA.endpoint, plus NEXA.nama untuk tiap URL string */
   endpoint: config,
   containerId: "main",
@@ -74,7 +74,7 @@ const req = new NXUI.Page({
         (base ? `${base}/assets/images/favicon.ico` : undefined),
     });
   },
-});
+}).run();
 // console.log('NEXA:', new NXUI.Buckets());
 // example → ExampleControllers → App\Controllers\Admin\ExampleController::track
 // (async () => {

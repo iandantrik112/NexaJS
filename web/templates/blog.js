@@ -26,7 +26,7 @@ console.log(NEXA.drive);
         route.routeMetaByRoute.set(page, {
           title: `${d.title} | devjs`,
           description: d.deskripsi || DEFAULT_BLOG_META.description,
-          ogImage:`http://localhost:3000/drive/300x300/${d.images}`
+          ogImage:`${NEXA.drive}/${d.images}`
         });
       } else {
         route.routeMetaByRoute.set(page, { ...DEFAULT_BLOG_META });
@@ -59,7 +59,7 @@ console.log(NEXA.drive);
                 return `
                 <article class="nx-page__blog-card">
                   <a class="nx-page__blog-card-title" href="/blog/${slug}">${item.title}</a>
-                  <img src="${NEXA.drive}/300x300/${item.images}" class="nx-page__blog-card-img img-responsive" alt="" />
+                  <img src="${NEXA.drive}/${item.images}" class="nx-page__blog-card-img img-responsive" alt="" />
                 </article>`;
               }).join("")}
             </div>

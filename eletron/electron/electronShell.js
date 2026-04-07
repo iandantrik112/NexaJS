@@ -8,7 +8,11 @@ const mainWindowLayout = {
   height: 800,
   minWidth: 400,
   minHeight: 300,
+  /** false = ukuran tetap; tidak bisa tarik tepi jendela (beda dari maximizable). */
+  resizable: true,
   maximizable: true,
+  /** true = menu klik kanan kustom (buildContextMenuTemplate). false = dinonaktifkan sepenuhnya. */
+  ContextMenu: true,
 };
 
 function buildContextMenuTemplate(ctx) {

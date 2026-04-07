@@ -1,0 +1,668 @@
+<!-- NexaUI Standard Form Testing -->
+
+
+
+<p></p>
+<div
+  style="
+    padding: 1rem;
+    padding-top: ;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+  "
+>
+  <h3>🧪 NexaUI Standard Form Auto-Collection Test</h3>
+  <p>
+    This test demonstrates the automatic form data collection system using
+    standard NexaUI components from <code>form.md</code>:
+  </p>
+
+  <div
+    style="
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.5rem;
+      margin: 1rem 0;
+    "
+  >
+  <div style="padding-top: 100px;"></div>
+    <div>
+      ✅ <strong>Text Inputs:</strong> text, email, tel, password, url, number
+    </div>
+    <div>✅ <strong>Date/Time:</strong> date, time inputs</div>
+    <div>✅ <strong>Selects:</strong> dropdown with floating labels</div>
+    <div>✅ <strong>Radio Groups:</strong> modern nx-radio-grid</div>
+    <div>✅ <strong>Checkboxes:</strong> modern nx-checkbox-grid</div>
+    <div>✅ <strong>Switches:</strong> modern nx-switch-grid</div>
+    <div>✅ <strong>Range Sliders:</strong> form-nexa-range</div>
+    <div>✅ <strong>File Upload:</strong> form-nexa-file</div>
+    <div>✅ <strong>Color Picker:</strong> input groups</div>
+    <div>✅ <strong>Textarea:</strong> floating label</div>
+    <div>✅ <strong>Hidden Inputs:</strong> for metadata</div>
+    <div>✅ <strong>Grid System:</strong> nx-container, nx-row, nx-col</div>
+  </div>
+
+  <p><strong>Features being tested:</strong></p>
+  <ul style="margin: 0.5rem 0; padding-left: 1.5rem">
+    <li>
+      Auto-collection of all form data using <code>getFormBy: ['id']</code>
+    </li>
+    <li>
+      ✅ <strong>Auto-validation</strong> using
+      <code>getValidationBy: ['name']</code>
+    </li>
+    <li>Radio button grouping by <code>name</code> attribute</li>
+    <li>Boolean conversion for checkboxes and switches</li>
+    <li>File object handling for file inputs</li>
+    <li>Real-time validation with error messages</li>
+    <li>Validated data collection and submission</li>
+    <li>Data structuring and processing</li>
+  </ul>
+
+  <div style="margin-top: 1rem">
+    <a
+      href="javascript:void(0);"
+      onclick="bukaModal('myModal',1);"
+      class="nx-btn-primary icon-button"
+    >
+      <i class="material-symbols-outlined">science</i>
+      Test NexaUI Standard Form Auto-Collection
+    </a>
+    <small style="margin-left: 1rem; color: #666"
+      >Click to open the comprehensive test form</small
+    >
+  </div>
+
+  <div
+    style="
+      margin-top: 1rem;
+      padding: 10px;
+      background: #e9f7ef;
+      border-radius: 5px;
+      border-left: 4px solid #28a745;
+    "
+  >
+    <strong>🗃️ IndexDB Persistence Test untuk Dynamic Modal:</strong>
+    <ol style="margin: 0.5rem 0; padding-left: 1.5rem">
+      <li>
+        <strong>PENTING:</strong> Buka Console (F12) untuk melihat debug
+        messages
+      </li>
+      <li>
+        Click "Test NexaUI Standard Form Auto-Collection" → Modal dynamic
+        terbuka
+      </li>
+      <li>Isi beberapa form data (nama, email, position, dll)</li>
+      <li>Click minimize button (−) → Lihat debug: "Modal has config: YES"</li>
+      <li><strong>Refresh halaman (F5)</strong></li>
+      <li>✅ Modal akan muncul kembali di taskbar dengan data lengkap!</li>
+    </ol>
+    <p style="margin: 0.5rem 0; font-size: 0.9em; color: #666">
+      💡 <strong>Debug Messages to Look For:</strong><br />
+      • "🔄 Modal myModal has config: YES"<br />
+      • "🗃️ Saved minimized state for modal: myModal"<br />
+      • "🔄 Recreating modal myModal from config"<br />
+      • "✅ Successfully recreated modal myModal"
+    </p>
+
+    <!-- 🧪 DEBUG TOOLS for Active Modal Persistence -->
+    <div
+      style="
+        margin-top: 1rem;
+        padding: 8px;
+        background: #f8f9fa;
+        border-radius: 4px;
+        border-left: 4px solid #007bff;
+      "
+    >
+      <strong>🧪 Debug Tools - Active Modal Persistence:</strong>
+      <div style="margin-top: 0.5rem; display: flex; gap: 8px; flex-wrap: wrap">
+        <button
+          onclick="testActiveModalPersistence()"
+          style="
+            padding: 4px 8px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 0.8rem;
+          "
+        >
+          🧪 Test Save
+        </button>
+        <button
+          onclick="checkIndexDBContent()"
+          style="
+            padding: 4px 8px;
+            background: #17a2b8;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 0.8rem;
+          "
+        >
+          📊 Check IndexDB
+        </button>
+        <button
+          onclick="forceActiveModalSave()"
+          style="
+            padding: 4px 8px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            font-size: 0.8rem;
+          "
+        >
+          💾 Force Save
+        </button>
+      </div>
+      <p style="margin: 0.5rem 0 0 0; font-size: 0.8em; color: #666">
+        Test workflow: Buka modal → Click "🧪 Test Save" → Lihat console & alert
+      </p>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  // Import NexaUI
+  const nexaUI = NexaUI();
+
+  // Function buka modal dengan parameter
+  window.bukaModal = (id, mode) => {
+    console.log("Modal:", id, "Mode:", mode);
+
+    // Buat modal setiap kali akan dibuka (setelah yang lama dihapus)
+    nexaUI.modalHTML({
+      elementById: "myModal",
+      styleClass: "w-400px", // Larger modal for comprehensive form
+      label: `NexaUI Standard Form Test`,
+      getFormBy: ["id", "data-order"], // Auto-collect form data by element ID (biar jelas fungsinya)
+      getValidationBy: ["name"], // Validation menggunakan name attribute
+      getStateBy: true,
+
+      onclick: {
+        title: "Submit Form",
+        cancel: "Cancel",
+        send: "saveUser",
+        validation: {
+          firstName: 2, // Minimal 2 karakter
+          lastName: 2, // Minimal 2 karakter
+          email: 5, // Minimal 5 karakter
+          phone: 10, // Minimal 10 karakter (akan divalidasi sebagai phone format)
+          password: [6, 20], // Minimal 6, maksimal 20 karakter
+          bio: [10, 500], // Minimal 10, maksimal 500 karakter
+          position: 1, // Required
+          country: 1, // Required
+          workType: 1, // Required (radio group)
+          agreeTerms: 1, // Required checkbox
+          // ✅ Tambahan validation untuk field yang missing
+          startTime: 1, // Required - jam kerja wajib
+          portfolio: 5, // Minimal 5 karakter untuk URL
+          teamSize: 1, // Required field (number range handled by HTML min/max)
+          skills: 1, // Required - minimal 1 skill harus dipilih
+          settings: 1, // Required - minimal 1 account setting harus dipilih
+          resume: [5, 1], // Required file - max 5MB, max 1 file
+        },
+      },
+      content: `
+        <div class="nx-container1">
+          <div class="nx-row">
+            <!-- Personal Information Section -->
+            <div class="nx-col-12">
+              <h5 class="text-secondary" style="margin-bottom: 1rem;">Personal Information</h5>
+            </div>
+            
+            <!-- Text Inputs with Icons -->
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-floating form-nexa-icon">
+                <input type="text" id="firstName" name="firstName" class="form-nexa-control" placeholder=" " required />
+                <i class="material-symbols-outlined">person</i>
+                <label>First Name</label>
+              </div>
+            </div>
+            
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-floating form-nexa-icon">
+                <input type="text" id="lastName" name="lastName" class="form-nexa-control" placeholder=" " required />
+                <i class="material-symbols-outlined">person</i>
+                <label>Last Name</label>
+              </div>
+            </div>
+            
+            <!-- Contact Information -->
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-floating form-nexa-icon">
+                <input type="email" id="email" name="email" class="form-nexa-control" placeholder=" " required />
+                <i class="material-symbols-outlined">email</i>
+                <label>Email Address</label>
+              </div>
+            </div>
+            
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-floating form-nexa-icon">
+                <input type="tel" id="phone" name="phone" class="form-nexa-control" placeholder=" " />
+                <i class="material-symbols-outlined">phone</i>
+                <label>Phone Number</label>
+              </div>
+            </div>
+            
+            <!-- Date and Password -->
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-floating form-nexa-icon">
+                <input type="date" id="birthDate" class="form-nexa-control" placeholder=" " />
+                <i class="material-symbols-outlined">calendar_today</i>
+                <label>Date of Birth</label>
+              </div>
+            </div>
+            
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-floating form-nexa-icon">
+                <input type="password" id="password" name="password" class="form-nexa-control" placeholder=" " required />
+                <i class="material-symbols-outlined">lock</i>
+                <label>Password</label>
+              </div>
+            </div>
+            
+            <!-- Work Information Section -->
+            <div class="nx-col-12" style="margin-top: 1.5rem;">
+              <h5 class="text-secondary" style="margin-bottom: 1rem;">Work Information</h5>
+            </div>
+            
+            <!-- Select Dropdowns with Icons -->
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-floating form-nexa-select-icon">
+                <select id="position" name="position" class="form-nexa-control" required>
+                  <option value="">Select Position</option>
+                  <option value="developer">Software Developer</option>
+                  <option value="designer">UI/UX Designer</option>
+                  <option value="manager">Project Manager</option>
+                  <option value="analyst">Data Analyst</option>
+                  <option value="admin">System Admin</option>
+                </select>
+                <i class="material-symbols-outlined">work</i>
+                <label>Position</label>
+              </div>
+            </div>
+            
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-floating form-nexa-select-icon">
+                <select id="department" class="form-nexa-control">
+                  <option value="">Select Department</option>
+                  <option value="it">IT Department</option>
+                  <option value="hr">Human Resources</option>
+                  <option value="finance">Finance</option>
+                  <option value="marketing">Marketing</option>
+                  <option value="sales">Sales</option>
+                </select>
+                <i class="material-symbols-outlined">business</i>
+                <label>Department</label>
+              </div>
+            </div>
+            
+            <!-- Country and Experience -->
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-floating form-nexa-select-icon">
+                <select id="country" name="country" class="form-nexa-control" required>
+                  <option value="">Select Country</option>
+                  <option value="id">🇮🇩 Indonesia</option>
+                  <option value="us">🇺🇸 United States</option>
+                  <option value="sg">🇸🇬 Singapore</option>
+                  <option value="my">🇲🇾 Malaysia</option>
+                  <option value="uk">🇬🇧 United Kingdom</option>
+                </select>
+                <i class="material-symbols-outlined">public</i>
+                <label>Country</label>
+              </div>
+            </div>
+            
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-group">
+                <label>Experience Level: <span id="exp-value">3</span> years</label>
+                <input
+                  type="range"
+                  id="experience"
+                  class="form-nexa-range"
+                  min="0"
+                  max="10"
+                  value="3"
+                  oninput="document.getElementById('exp-value').textContent=this.value"
+                />
+              </div>
+            </div>
+            
+            <!-- Salary Range -->
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-group">
+                <label>Expected Salary: $<span id="salary-value">5000</span></label>
+                <input
+                  type="range"
+                  id="salary"
+                  class="form-nexa-range"
+                  min="1000"
+                  max="15000"
+                  value="5000"
+                  step="500"
+                  oninput="document.getElementById('salary-value').textContent=this.value"
+                />
+              </div>
+            </div>
+            
+            <!-- Number Input -->
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-floating">
+                <input type="number" id="teamSize" name="teamSize" class="form-nexa-control" placeholder=" " min="1" max="999" required />
+                <label>Preferred Team Size</label>
+              </div>
+            </div>
+            
+            <!-- Preferences Section -->
+            <div class="nx-col-12" style="margin-top: 1.5rem;">
+              <h5 class="text-secondary" style="margin-bottom: 1rem;">Preferences & Settings</h5>
+            </div>
+            
+            <!-- Modern Radio Buttons -->
+            <div class="nx-col-12 nx-md-6">
+              <label class="form-label" style="margin-bottom: 0.5rem;">Work Type:</label>
+              <div class="nx-c-grid">
+                <div class="nx-radio-item">
+                  <input type="radio" id="workRemote" name="workType" value="remote" />
+                  <label for="workRemote">
+                    <span class="nx-radio-mark"></span>
+                    Remote Work
+                  </label>
+                </div>
+                <div class="nx-radio-item">
+                  <input type="radio" id="workOffice" name="workType" value="office" />
+                  <label for="workOffice">
+                    <span class="nx-radio-mark"></span>
+                    Office Work
+                  </label>
+                </div>
+                <div class="nx-radio-item">
+                  <input type="radio" id="workHybrid" name="workType" value="hybrid" />
+                  <label for="workHybrid">
+                    <span class="nx-radio-mark"></span>
+                    Hybrid Work
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Modern Checkboxes -->
+            <div class="nx-col-12 nx-md-6">
+              <label class="form-label" style="margin-bottom: 0.5rem;">Skills:</label>
+              <div class="nx-checkbox-grid">
+                <div class="nx-checkbox-item">
+                  <input type="checkbox" id="skillJavaScript" name="skills" value="javascript" class="single-select-checkbox" />
+                  <label for="skillJavaScript">
+                    <span class="nx-checkmark"></span>
+                    JavaScript
+                  </label>
+                </div>
+                <div class="nx-checkbox-item">
+                  <input type="checkbox" id="skillPython" name="skills" value="python" class="single-select-checkbox" />
+                  <label for="skillPython">
+                    <span class="nx-checkmark"></span>
+                    Python
+                  </label>
+                </div>
+                <div class="nx-checkbox-item">
+                  <input type="checkbox" id="skillReact" name="skills" value="react" class="single-select-checkbox" />
+                  <label for="skillReact">
+                    <span class="nx-checkmark"></span>
+                    React
+                  </label>
+                </div>
+                <div class="nx-checkbox-item">
+                  <input type="checkbox" id="skillNodeJS" name="skills" value="nodejs" class="single-select-checkbox" />
+                  <label for="skillNodeJS">
+                    <span class="nx-checkmark"></span>
+                    Node.js
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Modern Switch Toggles -->
+            <div class="nx-col-12">
+              <label class="form-label" style="margin-bottom: 0.5rem;">Account Settings:</label>
+              <div class="nx-switch-grid">
+                <div class="nx-switch-item">
+                  <input type="checkbox" id="receiveEmails" name="settings" value="enabled" class="single-select-switch" />
+                  <label for="receiveEmails">
+                    <span class="nx-switch"></span>
+                    Receive Email Notifications
+                  </label>
+                </div>
+                <div class="nx-switch-item">
+                  <input type="checkbox" id="isActive" name="settings" value="active" class="single-select-switch" />
+                  <label for="isActive">
+                    <span class="nx-switch"></span>
+                    Account Active
+                  </label>
+                </div>
+                <div class="nx-switch-item">
+                  <input type="checkbox" id="publicProfile" name="settings" value="public" class="single-select-switch" />
+                  <label for="publicProfile">
+                    <span class="nx-switch"></span>
+                    Public Profile
+                  </label>
+                </div>
+                <div class="nx-switch-item">
+                  <input type="checkbox" id="newsletterSubscription" name="settings" value="subscribed" class="single-select-switch" />
+                  <label for="newsletterSubscription">
+                    <span class="nx-switch"></span>
+                    Newsletter Subscription
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <!-- File Upload and Color Picker -->
+            <div class="nx-col-12" style="margin-top: 1.5rem;">
+              <h5 class="text-secondary" style="margin-bottom: 1rem;">Additional Information</h5>
+            </div>
+            
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-floating">
+                <input type="file" id="resume" name="resume" class="form-nexa-control" 
+                       accept=".pdf,.doc,.docx,.txt" data-max-size="5" data-max-files="1" required />
+                <label>Resume/CV (Required)</label>
+              </div>
+            </div>
+            
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-input-group">
+                <span class="form-nexa-input-group-text">
+                  <input type="color" id="favoriteColor" class="form-nexa-color-picker" value="#007bff" />
+                </span>
+                <input type="text" id="favoriteColorValue" class="form-nexa-control" placeholder="#007bff" />
+              </div>
+            </div>
+            
+            <!-- Time and URL -->
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-floating">
+                <input type="time" id="startTime" name="startTime" class="form-nexa-control" placeholder=" " required />
+                <label>Preferred Start Time</label>
+              </div>
+            </div>
+            
+            <div class="nx-col-12 nx-md-6">
+              <div class="form-nexa-floating form-nexa-icon">
+                <input type="url" id="portfolio" name="portfolio" class="form-nexa-control" placeholder=" " required />
+                <i class="material-symbols-outlined">link</i>
+                <label>Portfolio URL</label>
+              </div>
+            </div>
+            
+            <!-- Bio Section -->
+            <div class="nx-col-12">
+              <div class="form-nexa-floating">
+                <textarea id="bio" name="bio" class="form-nexa-control" rows="4" placeholder=" "></textarea>
+                <label>Tell us about yourself</label>
+            </div>
+          </div>
+   
+            <!-- Hidden Input for Testing -->
+            <input type="hidden" id="userId" value="12345" />
+            
+            <!-- Terms Agreement -->
+            <div class="nx-col-12" style="margin-top: 1rem;">
+              <div class="nx-checkbox-grid">
+                <div class="nx-checkbox-item">
+                  <input type="checkbox" id="agreeTerms" name="agreeTerms" value="agreed" required />
+                  <label for="agreeTerms">
+                    <span class="nx-checkmark"></span>
+                    I agree to the Terms of Service and Privacy Policy
+                  </label>
+                </div>
+              </div>
+                        </div>
+          </div>
+        </div>
+      `,
+    });
+
+    // Buka modal setelah dibuat
+    nexaUI.nexaModal.open(id);
+  };
+
+  // Callback untuk menerima data form yang sudah tervalidasi
+  window.saveUser = function (modalId, data) {
+    console.log("✅ VALIDATED Complete collected data:", data);
+
+    // Data sudah tervalidasi oleh NexaValidation.js
+    // Tidak perlu validasi manual lagi
+
+    console.log("📋 Form validation passed successfully!");
+    console.log("📊 Data structure:", {
+      personalInfo: {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        email: data.email,
+        phone: data.phone,
+      },
+      workInfo: {
+        position: data.position,
+        country: data.country,
+        workType: data.workType,
+      },
+      additionalInfo: {
+        bio: data.bio,
+        agreeTerms: data.agreeTerms,
+      },
+    });
+
+    // Process validated data
+    console.log("🚀 Processing validated form data...");
+
+    // Example: Send to server API
+    // fetch('/api/users', {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify(data)
+    // });
+
+    nexaUI.nexaModal.close(modalId);
+  };
+
+  // Function close modal
+  window.closeModal = function (modalId) {
+    nexaUI.nexaModal.close(modalId);
+  };
+
+  // 🧪 DEBUG FUNCTIONS untuk test Active Modal Persistence
+  window.testActiveModalPersistence = async function () {
+    console.log("🧪 Testing Active Modal Persistence...");
+
+    // 1. Check current active modals
+    const activeModals = Array.from(nexaUI.nexaModal.activeModals);
+    console.log("📊 Current active modals:", activeModals);
+
+    // 2. Manually trigger saveActiveModals
+    console.log("💾 Manually saving active modals to IndexDB...");
+    await nexaUI.nexaModal.saveActiveModals();
+
+    // 3. Check IndexDB content
+    setTimeout(async () => {
+      try {
+        const db = await new Promise((resolve, reject) => {
+          const request = indexedDB.open("NexaModalDB", 2);
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+
+        const transaction = db.transaction(["activeModals"], "readonly");
+        const store = transaction.objectStore("activeModals");
+        const request = store.getAll();
+
+        request.onsuccess = () => {
+          console.log("🗃️ IndexDB activeModals content:", request.result);
+          alert(
+            `🧪 Test Results:\n• Active Modals: ${activeModals.length}\n• Saved to IndexDB: ${request.result.length}\n• Check console for details`
+          );
+        };
+      } catch (error) {
+        console.error("❌ Failed to check IndexDB:", error);
+        alert("❌ IndexDB check failed - see console");
+      }
+    }, 1000);
+  };
+
+  window.checkIndexDBContent = async function () {
+    try {
+      const db = await new Promise((resolve, reject) => {
+        const request = indexedDB.open("NexaModalDB", 2);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+      });
+
+      const activeTransaction = db.transaction(["activeModals"], "readonly");
+      const activeStore = activeTransaction.objectStore("activeModals");
+      const activeRequest = activeStore.getAll();
+
+      const minimizedTransaction = db.transaction(
+        ["minimizedModals"],
+        "readonly"
+      );
+      const minimizedStore =
+        minimizedTransaction.objectStore("minimizedModals");
+      const minimizedRequest = minimizedStore.getAll();
+
+      activeRequest.onsuccess = () => {
+        minimizedRequest.onsuccess = () => {
+          const info = {
+            activeModals: activeRequest.result,
+            minimizedModals: minimizedRequest.result,
+            currentActiveSet: Array.from(nexaUI.nexaModal.activeModals),
+            currentMinimizedSet: Array.from(nexaUI.nexaModal.minimizedModals),
+          };
+
+          console.log("📊 Complete IndexDB Status:", info);
+          alert(
+            `📊 IndexDB Content:\n• Active: ${activeRequest.result.length}\n• Minimized: ${minimizedRequest.result.length}\n• Currently Active: ${info.currentActiveSet.length}\n• Currently Minimized: ${info.currentMinimizedSet.length}`
+          );
+        };
+      };
+    } catch (error) {
+      console.error("❌ Failed to check IndexDB:", error);
+      alert("❌ IndexDB check failed");
+    }
+  };
+
+  window.forceActiveModalSave = function () {
+    console.log("🔧 Force saving active modals...");
+    nexaUI.nexaModal
+      .saveActiveModals()
+      .then(() => {
+        console.log("✅ Force save completed");
+        setTimeout(() => checkIndexDBContent(), 500);
+      })
+      .catch((error) => {
+        console.error("❌ Force save failed:", error);
+      });
+  };
+</script>

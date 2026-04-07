@@ -1,3 +1,5 @@
+import "./assets/modules/Nexa.js";
+
 /** Diisi server lewat index.html (window.__NEXA_ENDPOINT__) — bukan import /config.js (diblokir publik). */
 const config = globalThis.__NEXA_ENDPOINT__;
 if (!config) {

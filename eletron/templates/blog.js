@@ -33,39 +33,40 @@ console.log(NEXA.drive);
       }
 
       container.innerHTML = `
-          <h1>${d ? d.title : "Artikel tidak ditemukan"}</h1>
-          <p><strong>${d ? d.deskripsi : ""}</strong></p>
-          <p>Route lengkap: ${routeName}</p>
-          <p>Base route: ${slug}</p>
-          <hr>
-          <nav>
-            <a href="/blog">← Kembali ke blog</a> |
-          </nav>
+          <article class="nx-page">
+            <h1 class="nx-page__title">${d ? d.title : "Artikel tidak ditemukan"}</h1>
+            ${d?.deskripsi ? `<p class="nx-page__lead"><strong>${d.deskripsi}</strong></p>` : ""}
+            <p class="nx-page__meta"><span class="nx-page__label">Route:</span> ${routeName}</p>
+            <p class="nx-page__meta"><span class="nx-page__label">Slug:</span> ${slug}</p>
+            <hr class="nx-page__rule" />
+            <nav class="nx-page__nav">
+              <a href="/blog">← Kembali ke blog</a>
+            </nav>
+          </article>
         `;
     } else {
       route.routeMetaByRoute.set(page, { ...DEFAULT_BLOG_META });
       const data4 = await NXUI.Storage().example().news({ news: 1 });
+      const items = data4?.data || [];
       container.innerHTML = `
-          <h1>Guides Page</h1>
-          <p>Ini adalah halaman Guides.</p>
-          <p>Route: ${routeName}</p>
-                     ${data4.data.map(item => {
-                               // item.id → setSlugId (sessionStorage), bukan ditambahkan ke string URL
-                      
-                               const slug = NXUI.createSlug(item.pubdate, item.slug, item.id, 'berita');
-                               return `
-                               <div class="nx-media bdr-1">
-                                   <div class="dataset-item-icon">
-                                   <a href="blog/${slug}">${item.title}</a>
-                                   <img src="${NEXA.drive}/300x300/${item.images}" class="img-responsive" alt="Image">
-                                 </div> 
-                               
-                                 </div>
-                               </div>`;
-                           }).join('')}
-          <hr>
-          <h2>Daftar Sub-Routes:</h2>
-        
+          <article class="nx-page">
+            <h1 class="nx-page__title">Guides Page</h1>
+            <p class="nx-page__lead">Ini adalah halaman Guides.</p>
+            <p class="nx-page__meta"><span class="nx-page__label">Route:</span> ${routeName}</p>
+            <div class="nx-page__blog-list">
+              ${items.map((item) => {
+                const slug = NXUI.createSlug(item.pubdate, item.slug, item.id, "berita");
+                return `
+                <article class="nx-page__blog-card">
+                  <a class="nx-page__blog-card-title" href="/blog/${slug}">${item.title}</a>
+                  <img src="${NEXA.drive}/300x300/${item.images}" class="nx-page__blog-card-img img-responsive" alt="" />
+                </article>`;
+              }).join("")}
+            </div>
+            <hr class="nx-page__rule" />
+            <h2 class="nx-page__subtitle">Daftar Sub-Routes</h2>
+            <p class="nx-page__hint">Buka artikel lewat tautan di atas.</p>
+          </article>
         `;
     }
   });
