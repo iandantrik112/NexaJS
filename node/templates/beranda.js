@@ -21,11 +21,28 @@ export async function beranda(page, route) {
     // } catch (error) {
       // Fallback jika template tidak ditemukan
       container.innerHTML = `
-          <h1>Home Page</h1>
-          <p>Ini adalah halaman Home.ssssssssss</p>
-          <p>Route: ${routeName}</p>
-          <p><strong>Title:</strong> </p>
-          <p><strong>Description:</strong> </p>
+        <div class="main-splash">
+          <img
+            class="main-splash__icon"
+            src="/assets/images/icon.png"
+            alt=""
+            width="50"
+            height="50"
+          />
+          <div class="main-splash__headlines">
+            <h1 class="main-splash__welcome">NexaJS Framework</h1>
+          </div>
+          <p class="main-splash__lead">
+            Bangun aplikasi web modern dengan routing SPA, worker, dan pola NexaUI —
+            satu tempat untuk struktur yang rapi dan siap dikembangkan.
+          </p>
+          <p class="main-splash__hint">Contoh tautan:</p>
+          <ul class="main-splash__nav">
+            <li><a href="/beranda" id="nav-home">Beranda</a></li>
+            <li><a href="/about" id="nav-about">About</a></li>
+            <li><a href="/blog" id="nav-blog">Blog</a></li>
+          </ul>
+        </div>
         `;
     // }
   });

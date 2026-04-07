@@ -1,0 +1,182 @@
+
+npm install --global eas-cli
+eas init --id d57f1146-d8ff-4835-9296-a913f1814a2f
+eas build -p android --profile preview
+
+SVG
+https://react-svgr.com/playground/?dimensions=false&expandProps=none&native=true
+npx expo run:android
+npx expo run:android --variant release
+npx expo run:android --variant debug
+npm uninstall react-native-svg
+
+Membuat File APK dan AAB 
+https://reactnative.dev/docs/signed-apk-android
+https://www.youtube.com/watch?v=-eZplh2CgMM
+
+=== MEMBUAT KEYSTORE MANUAL UNTUK DEVELOPMENT ===
+
+PENTING: Pastikan Java JDK atau Android Studio sudah terinstall!
+
+=== CARA MENCARI KEYTOOL DI WINDOWS ===
+
+Opsi 1: Menggunakan keytool dari Android Studio (Recommended)
+   Lokasi umum: %LOCALAPPDATA%\Android\Sdk\jbr\bin\keytool.exe
+   
+   Di PowerShell:
+   cd android/app
+   & "$env:LOCALAPPDATA\Android\Sdk\jbr\bin\keytool.exe" -genkeypair -v -storetype PKCS12 -keystore my-upload-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000
+
+Opsi 2: Menggunakan keytool dari Java JDK
+   Lokasi umum: C:\Program Files\Java\jdk-XX\bin\keytool.exe
+   
+   Di PowerShell:
+   cd android/app
+   & "C:\Program Files\Java\jdk-XX\bin\keytool.exe" -genkeypair -v -storetype PKCS12 -keystore my-upload-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000
+   
+   (Ganti jdk-XX dengan versi JDK yang terinstall, contoh: jdk-17, jdk-21)
+
+Opsi 3: Jika keytool sudah di PATH
+   cd android/app
+   keytool -genkeypair -v -storetype PKCS12 -keystore my-upload-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000
+
+=== CARA MENCARI LOKASI KEYTOOL ===
+
+Di PowerShell, jalankan salah satu command berikut:
+
+1. Cari di Android Studio:
+   Get-ChildItem "$env:LOCALAPPDATA\Android\Sdk" -Recurse -Filter "keytool.exe" -ErrorAction SilentlyContinue | Select-Object FullName
+
+2. Cari di Java JDK:
+   Get-ChildItem "C:\Program Files\Java" -Recurse -Filter "keytool.exe" -ErrorAction SilentlyContinue | Select-Object FullName
+
+3. Cari di seluruh sistem (lebih lambat):
+   Get-ChildItem C:\ -Recurse -Filter "keytool.exe" -ErrorAction SilentlyContinue | Select-Object FullName -First 5
+
+=== JIKA JAVA/JDK BELUM TERINSTALL ===
+
+Install salah satu:
+1. Android Studio (sudah include JDK): https://developer.android.com/studio
+2. Java JDK: https://www.oracle.com/java/technologies/downloads/
+   Atau OpenJDK: https://adoptium.net/
+
+Setelah install, restart terminal/PowerShell dan coba lagi.
+
+=== MENGGUNAKAN SCRIPT PENCARI KEYTOOL ===
+
+Di folder android/app sudah ada script PowerShell untuk mencari keytool:
+   cd android/app
+   .\find-keytool.ps1
+
+Script ini akan mencari keytool di seluruh sistem dan memberikan command yang siap digunakan.
+
+3. Isi informasi yang diminta:
+   - Enter keystore password: (masukkan password, contoh: android123)
+   - Re-enter new password: (ulangi password yang sama)
+   - What is your first and last name?: (contoh: Your Name)
+   - What is the name of your organizational unit?: (contoh: Development)
+   - What is the name of your organization?: (contoh: Your Company)
+   - What is the name of your City or Locality?: (contoh: Jakarta)
+   - What is the name of your State or Province?: (contoh: DKI Jakarta)
+   - What is the two-letter country code for this unit?: (contoh: ID)
+   - Is CN=Your Name, OU=Development, O=Your Company, L=Jakarta, ST=DKI Jakarta, C=ID correct? [no]: yes
+   - Enter key password for <my-key-alias>: (masukkan password yang sama atau tekan Enter untuk menggunakan password keystore)
+
+4. File keystore akan dibuat di: android/app/my-upload-key.keystore
+
+5. Konfigurasi build.gradle untuk menggunakan keystore:
+   Edit file: android/app/build.gradle
+   
+   Tambahkan di bagian signingConfigs:
+   release {
+       if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
+           storeFile file(MYAPP_UPLOAD_STORE_FILE)
+           storePassword MYAPP_UPLOAD_STORE_PASSWORD
+           keyAlias MYAPP_UPLOAD_KEY_ALIAS
+           keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+       }
+   }
+
+6. Buat file android/gradle.properties dan tambahkan:
+   MYAPP_UPLOAD_STORE_FILE=my-upload-key.keystore
+   MYAPP_UPLOAD_KEY_ALIAS=my-key-alias
+   MYAPP_UPLOAD_STORE_PASSWORD=android123
+   MYAPP_UPLOAD_KEY_PASSWORD=android123
+   
+   CATATAN: Ganti password dengan password yang Anda buat!
+
+7. Update build.gradle release signingConfig:
+   release {
+       signingConfig signingConfigs.release
+       ...
+   }
+
+8. Build APK Release:
+   
+   PENTING: Set JAVA_HOME terlebih dahulu!
+   
+   Di PowerShell:
+   cd android
+   
+   # Opsi 1: Set JAVA_HOME untuk sesi ini
+   $env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+   $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+   
+   # Opsi 2: Gunakan script yang sudah disediakan
+   .\set-java-home.ps1
+   
+   # Setelah JAVA_HOME diatur, build APK:
+   .\gradlew assembleRelease
+   
+   Atau untuk AAB (untuk Play Store):
+   .\gradlew bundleRelease
+   
+   === JIKA ADA ERROR GRADLE CACHE ===
+   
+   Jika muncul error "Could not move temporary workspace":
+   
+   1. Tutup semua aplikasi yang menggunakan Java/Gradle
+   2. Jalankan script perbaikan:
+      .\fix-gradle-cache.ps1
+   
+   3. Atau manual:
+      - Hapus folder .gradle di android/
+      - Hapus cache: %USERPROFILE%\.gradle\caches
+      - Coba build lagi
+   
+   4. Jika masih error, coba nonaktifkan antivirus sementara atau
+      tambahkan folder android ke exclusion list
+   
+   === MENGATUR JAVA_HOME PERMANEN (Opsional) ===
+   
+   Untuk mengatur JAVA_HOME secara permanen di Windows:
+   
+   1. Buka System Properties:
+      - Tekan Win + R, ketik: sysdm.cpl
+      - Atau: Settings > System > About > Advanced system settings
+   
+   2. Klik "Environment Variables"
+   
+   3. Di bagian "System variables", klik "New":
+      Variable name: JAVA_HOME
+      Variable value: C:\Program Files\Android\Android Studio\jbr
+   
+   4. Edit variable "Path" dan tambahkan:
+      %JAVA_HOME%\bin
+   
+   5. Restart PowerShell/Command Prompt
+
+9. File APK akan ada di: android/app/build/outputs/apk/release/app-release.apk
+   File AAB akan ada di: android/app/build/outputs/bundle/release/app-release.aab
+
+=== CATATAN PENTING ===
+- SIMPAN FILE KEYSTORE DAN PASSWORD DENGAN AMAN!
+- Jika keystore hilang, Anda TIDAK BISA update aplikasi yang sudah di-upload ke Play Store
+- Jangan commit file keystore ke Git (tambahkan ke .gitignore)
+- Untuk production, gunakan keystore yang berbeda dari development
+
+npm run android -- --mode="release"
+npx react-native build-android --mode=release
+./gradlew assembleRelease
+./gradlew bundleRelease
+

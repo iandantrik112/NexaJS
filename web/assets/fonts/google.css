@@ -1,0 +1,65 @@
+/* JetBrains Mono, Outfit, Source Sans 3 — disalin lokal dari Google Fonts (SIL OFL). */
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("google/jetbrains-mono-400.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("google/jetbrains-mono-500.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("google/outfit-500.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("google/outfit-600.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'Outfit';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("google/outfit-700.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'Source Sans 3';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("google/sourcesans3-400italic.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'Source Sans 3';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("google/sourcesans3-400.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: 'Source Sans 3';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("google/sourcesans3-600.ttf") format("truetype");
+}

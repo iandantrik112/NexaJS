@@ -1,8 +1,0 @@
-/* Contoh stylesheet untuk pasangan NexaStylesheet.Dom(['text.css']) di scimport.js */
-#scimport-text-target {
-  margin-top: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  border-left: 4px solid #c92121;
-  background: #f0fdfa;
-  font-size: 0.9rem;
-}

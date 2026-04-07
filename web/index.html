@@ -6,75 +6,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- Base root: tanpa subfolder deploy; href absolut (/contact/data) tetap ke origin -->
     <base href="/" />
-    <title>App</title>
-
+    <title>Nexa</title>
     <link rel="stylesheet" href="/assets/css/style.css" />
-
-    <style>
-      /* Basic styling untuk navigation */
-      .Navigation {
-        background: #333;
-        padding: 1rem;
-      }
-      .Navigation a {
-        color: white;
-        text-decoration: none;
-        margin-right: 1rem;
-        padding: 0.5rem 1rem;
-        display: inline-block;
-      }
-      .Navigation a:hover,
-      nav a.active {
-        background: #555;
-      }
-      #main {
-        padding: 2rem;
-        min-height: 400px;
-      }
-    </style>
   </head>
   <body>
-    <!-- Navigation Menu -->
-    <div class="Navigation">
-      <!-- Relatif ke <base href="/"> → /beranda, /contact/data -->
-      <a href="/beranda" id="nav-home">Beranda</a>
-      <a href="/about" id="nav-about">About</a>
-      <a href="/blog" id="nav-blog">Blog</a>
-      <a href="/contact" id="nav-contact">Contact</a>
-      <a href="/exsampel" id="nav-contact">exsampel</a>
-      <a href="/guides" id="nav-contact">guides</a>
-      <a href="/modal" id="nav-contact">modal</a>
-      <a href="/colom" id="nav-contact">Colom</a>
-      <a href="/form" id="nav-contact">form</a>
-      <a href="/ds/data" id="nav-contact-data">Contact / data</a>
-      <a href="/wizard" id="nav-contact-wizard">Wizard</a>
-      <a href="/tables" id="nav-contact-tables">Tables</a>
-      <a href="/notifikasi" id="nav-contact-notifikasi">Notifikasi</a>
-      <a href="/voice" id="nav-contact-notifikasi">Voice</a>
-      <a href="/markdown" id="nav-contact-notifikasi">Markdown</a>
-      <a href="/field" id="nav-contact-notifikasi">Field</a>
-      <a href="/checkable" id="nav-contact-notifikasi">Checkable</a>
-      <a href="/qrcode" id="nav-contact-notifikasi">QRCode</a>
-      <a href="/prind" id="nav-contact-notifikasi">Prind</a>
-      <a href="/escpos" id="nav-contact-notifikasi">Escpos</a>
-      <a href="/lightbox" id="nav-contact-notifikasi">Lightbox</a>
-      <a href="/svg" id="nav-contact-notifikasi">Svg</a>
-      <a href="/scimport" id="nav-contact-notifikasi">Import</a>
-      <a href="/filetype" id="nav-contact-notifikasi">File Type</a>
-      <a href="/dropdown" id="nav-contact-notifikasi">Dropdown</a>
-      <a href="/grid" id="nav-contact-notifikasi">Grid</a>
-      <a href="/sidebar" id="nav-contact-notifikasi">Sidebar</a>
-      <a href="/sortable" id="nav-contact-notifikasi">Sortable</a>
-      <a href="/scroll" id="nav-contact-notifikasi">Scroll</a>
-      <a href="/filter" id="nav-contact-notifikasi">Filter</a>
-      <a href="/eventhandling" id="nav-contact-notifikasi">Handling</a>
-      <a href="/network" id="nav-contact-notifikasi">Network</a>
-      <a href="/geolocation" id="nav-contact-notifikasi">Geolocation</a>
-      <a href="/terminal" id="nav-contact-notifikasi">Terminal</a>
+    <header class="site-header" role="banner">
+      <div class="site-header__inner">
+        <p class="site-header__docs">
+          <a href="http://localhost/docs/platform/javascript" id="nav-docs">Dokumentasi platform (JavaScript)</a>
+        </p>
+        <div class="site-header__cluster">
+          <p class="site-header__hint">Contoh tautan:</p>
+          <nav class="site-header__nav" aria-label="Navigasi utama">
+            <ul class="site-header__links">
+              <li><a href="/beranda" id="nav-home">Beranda</a></li>
+              <li><a href="/about" id="nav-about">About</a></li>
+              <li><a href="/blog" id="nav-blog">Blog</a></li>
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </header>
+    <!-- Konten route di #main; relatif ke <base href="/"> -->
+    <div id="main">
+      <div class="main-splash">
+        <img
+          class="main-splash__icon"
+          src="/assets/images/icon.png"
+          alt=""
+          width="50"
+          height="50"
+        />
+      </div>
     </div>
-
-    <!-- Main Content Container -->
-    <div id="main"></div>
     <!-- Konten route dimuat di sini; base URL API di App.js (url → NEXA.url) -->
 
     <script type="module" src="/App.js"></script>
