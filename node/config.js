@@ -1,7 +1,7 @@
 /** Hanya untuk Node (server.js). Browser dapat endpoint lewat window.__NEXA_ENDPOINT__ di HTML — GET /config.js diblokir. */
 const config = {
   url: "http://127.0.0.1:3107",
-  urlApi: "http://localhost:/api",        //  url jika menggunakan drive backend Nexa Dom Framework
+  urlApi: "http://localhost:/api",        //  url jika menggunakan drive backend Nexa Dom Framework baca dokumentasi NXUI.Inisiasi: App.js
   drive: "http://localhost/assets/drive", // url jika menggunakan drive backend Nexa Dom Framework
   typicode: "https://jsonplaceholder.typicode.com/photos",// url typicode backend umum baca dokuentasi NXUI.Storage().api(row, body)
   firebaseConfig:false, // jika tidak menggunakan firebase backend maka isi dengan false
