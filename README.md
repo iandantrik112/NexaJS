@@ -1,6 +1,6 @@
 # Terminal Nexa — pintasan keyboard & perintah proyek
 
-Dokumentasi navigasi input, riwayat perintah, serta perintah `**start**`, `**dev**`, `**stop**`, `**restart**`, `**instal**`, `**modules**`, dan `**npm instal**` 
+Dokumentasi navigasi input, riwayat perintah, serta perintah `**start**`, `**dev**`, `**stop**`, `**servers**`, `**restart**`, `**instal**`, `**modules**`, dan `**npm instal**`. Termasuk deteksi **Expo** (`metro.config.js`), **pratinjau web** di jendela Electron, **tabel ASCII** (`**tabelRaw.js**` untuk `**servers**`), dan **progres UI** (`**NexaNpm.js**` / `**npm.css**`).
 
 ## Riwayat perintah (↑ mundur, ↓ maju)
 
@@ -61,6 +61,21 @@ Ketik `**shortcuts`** untuk daftar ringkas pintasan dan beberapa perintah yang s
 | `**ls**`                             | Di Electron dengan cwd: daftar isi folder cwd di disk; lainnya daftar contoh. |
 
 
+### Buat folder / file & hapus (`mkdir`, `touch`, `rm`, …)
+
+Membutuhkan **Electron** + `electronAPI.mkdir` / `electronAPI.touchFile` / `electronAPI.removePath`. Tanpa **cwd**, path relatif ditolak — gunakan **`cd`** dulu atau path absolut (mis. `D:\folder`).
+
+| Perintah | Fungsi |
+| -------- | ------ |
+| `**mkdir** …` | Membuat folder (dan induk bila perlu, seperti `mkdir -p`). Contoh: `mkdir src` atau `mkdir D:\proyek\baru`. |
+| `**touch** …` | Membuat **file kosong** (folder induk dibuat bila belum ada). Jika file sudah ada, **memperbarui waktu modifikasi** (bukan folder — jika path itu folder, akan error). |
+| `**mkfile** …` | Alias **`touch`**. |
+| `**rm** …` | Menghapus **file** atau **folder kosong**. Folder yang masih berisi akan gagal — pakai `**rmr**`. |
+| `**rmr** …` | Menghapus **folder beserta isi** (rekursif). Hati-hati: tidak bisa dibatalkan dari terminal. |
+| `**del** …` | Alias **`rm`** (penghapusan file / folder kosong). |
+
+Untuk mengisi file dengan **teks tertentu**, gunakan editor atau salin isi dari luar terminal; perintah ini hanya membuat file **kosong** / menyentuh timestamp.
+
 ---
 
 ## Port default proyek (bukan port Nexa)
@@ -80,11 +95,15 @@ Gunakan setelah `**cd**` ke folder proyek.
 
 ### `start dev`
 
-**Sama persis dengan `dev`** — alur “tanpa wajib `.htaccess`”: mendeteksi folder (Electron-only, `server.js`, atau static), lalu menjalankan mode yang sesuai (termasuk `**npm run dev**` untuk proyek yang hanya punya `**electron.js**` tanpa `**server.js**`).
+**Sama persis dengan `dev`** — alur “tanpa wajib `.htaccess`”: mendeteksi folder (**Expo** / `metro.config.js`, Electron-only, `server.js`, atau static), lalu menjalankan mode yang sesuai (termasuk `**npm run dev**` bila hanya `**electron.js**` tanpa `**server.js**`, dan bukan kasus Expo).
+
+### `start` (tanpa argumen) — jalur singkat **Expo web**
+
+Jika di **cwd** ada `**metro.config.js`** (file) dan **tidak** ada `**server.js**`, `**start**` memakai **jalur singkat**: menjalankan `**npx expo start --web --port …**` (setara `**dev**` untuk kasus itu). **cwd** proyek = folder Metro/Expo (bukan folder instal Nexa). Log di konsol Electron: **`[nexa-expo]`**. URL dev dibuka di **jendela Electron pratinjau** (`**openMobilePreview**`), bukan browser sistem — kecuali pratinjau gagal, lalu fallback **`openExternal`**.
 
 ### `start` (tanpa argumen) di folder **hanya Electron**
 
-Jika di **cwd** ada `**electron.js`** dan **tidak** ada `**server.js`**, `**start**` memakai **jalur singkat**: menjalankan `**npm run dev`** (setara perilaku dev untuk kasus itu), dengan pesan ringkas. Log proses tampil di konsol Electron (mis. awalan `[nexa-npm-dev]`).
+Jika di **cwd** ada `**electron.js`** dan **tidak** ada `**server.js**`, dan **bukan** kasus Expo di atas, `**start**` memakai **jalur singkat**: `**npm run dev**`. Log: **`[nexa-npm-dev]`** (stdout disanitasi agar konsol Windows tidak berantakan). Proses main menunggu **sinyal siap** di log (mis. `Express server running`, `Electron] Memuat`, Vite/webpack) sebelum menganggap startup selesai — supaya **baris progres terminal** tidak hilang sebelum jendela/server proyek benar-benar jalan.
 
 ### Alur `start` umum (setelah pengecekan di atas)
 
@@ -92,8 +111,9 @@ Jika di **cwd** ada `**electron.js`** dan **tidak** ada `**server.js`**, `**star
 2. **Jika ada `.htaccess`** — mode “proyek Apache-style”: diminta **port** (Enter = default di atas), `**startStaticServe`** melayani folder di `**127.0.0.1:<port>**`, browser dibuka ke URL itu.
 3. **Jika tidak ada `.htaccess`** — dibaca isi folder:
   - Ada `**server.js**` — mode **Node**: `node server.js` dengan `**PORT`** = port pilihan; browser ke URL lokal proyek (bukan halaman Nexa).
+  - Ada `**metro.config.js**` (tanpa `server.js`) — mode **Expo web**: `**npx expo start --web**`; main menunggu teks bundel **`Web Bundled`** (atau timeout) sebelum mengakhiri IPC — supaya progres **`start:`** di terminal tidak hilang saat Metro masih mengompilasi.
   - Ada `**electron.js**` saja — sudah ditangani **jalur singkat** di atas (return lebih awal).
-  - **Tidak ada** ketiganya (`.htaccess`, `server.js`, `electron.js`) — pesan **“Server tidak ditemukan”** dan saran memakai `**dev [port]`** untuk folder statis tanpa penanda itu.
+  - **Tidak ada** penanda yang dikenali — pesan **“Server tidak ditemukan”** (termasuk `metro.config.js` dalam daftar) dan saran `**dev [port]`** untuk folder statis tanpa penanda itu.
 
 ### `start <url>`
 
@@ -109,11 +129,12 @@ Contoh: `**start http://127.0.0.1:3007**` — lewati prompt port; URL dipakai un
 Perilaku menurut isi folder:
 
 
-| Isi cwd (ringkas)               | Perilaku utama                                                                                              |
-| ------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `electron.js` tanpa `server.js` | `**npm run dev`** (aplikasi desktop Electron folder itu)                                                    |
-| `server.js`                     | Static serve / `**node server.js**` sesuai implementasi main (mode `node`), lalu buka browser ke URL proyek |
-| Folder statis / campuran        | Express static di proses Electron + buka browser                                                            |
+| Isi cwd (ringkas)                          | Perilaku utama                                                                                              |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `metro.config.js` tanpa `server.js`        | **Expo web**: `**npx expo start --web**`, pratinjau di jendela Electron; log `[nexa-expo]`                    |
+| `electron.js` tanpa `server.js` (bukan RN) | `**npm run dev**` (desktop); tunggu sinyal siap di log sebelum IPC selesai                                   |
+| `server.js`                                | Static serve / `**node server.js**` sesuai main (mode `node`), lalu buka browser ke URL proyek               |
+| Folder statis / campuran                   | Express static di proses Electron + buka browser                                                            |
 
 
 Tidak perlu menjalankan `http-server` manual untuk kasus yang ditangani Nexa; aturan `**.htaccess**` tidak dipakai di cabang `**dev**` (beda dengan `**start**` yang pertama-tama mengecek `.htaccess`).
@@ -122,7 +143,7 @@ Tidak perlu menjalankan `http-server` manual untuk kasus yang ditangani Nexa; at
 
 ## Perintah `instal` dan `install`
 
-Menyalin **isi penuh** subfolder `**web`**, `**node**`, atau `**eletron**` dari repositori **NexaJS** (arsip ZIP GitHub) ke **cwd** (bukan subfolder baru di dalam cwd).
+Menyalin **isi penuh** subfolder `**web`**, `**node**`, `**eletron**`, atau `**react**` dari repositori **NexaJS** (arsip ZIP GitHub) ke **cwd** (bukan subfolder baru di dalam cwd).
 
 
 | Contoh                                       | Arti                                                     |
@@ -130,6 +151,7 @@ Menyalin **isi penuh** subfolder `**web`**, `**node**`, atau `**eletron**` dari 
 | `**instal web`**                             | Paket **web**, branch **main** (terbaru default).        |
 | `**instal web@v1.0.0`**                      | Paket **web**, tag `**v1.0.0`**.                         |
 | `**instal node**`                            | Paket **node**.                                          |
+| `**instal react**`                           | Paket **react**.                                         |
 | `**instal electron`** / `**instal eletron**` | Paket **eletron** di repo (nama folder repo: `eletron`). |
 
 
@@ -143,7 +165,7 @@ Menyalin **isi penuh** subfolder `**web`**, `**node**`, atau `**eletron**` dari 
 
 ## Perintah `modules`
 
-Hanya memperbarui `**assets/modules`** proyek Anda dari jalur `**{web\|node\|eletron}/assets/modules**` di arsip NexaJS yang sama.
+Hanya memperbarui `**assets/modules`** proyek Anda dari jalur `**{web\|node\|eletron\|react}/assets/modules**` di arsip NexaJS yang sama.
 
 
 | Contoh                   | Tujuan di disk                                                  |
@@ -151,6 +173,7 @@ Hanya memperbarui `**assets/modules`** proyek Anda dari jalur `**{web\|node\|ele
 | `**modules web**`        | `**cwd/assets/modules**` ← isi `**web/assets/modules**` (main). |
 | `**modules web@v1.0.0**` | Sama, dari tag yang diminta.                                    |
 | `**modules node**`       | Dari `**node/assets/modules**`.                                 |
+| `**modules react**`      | Dari `**react/assets/modules**`.                                |
 | `**modules electron**`   | Dari `**eletron/assets/modules**`.                              |
 
 
@@ -168,15 +191,25 @@ Menjalankan `**npm install**` sekali di **cwd** (mengisi `**node_modules`** dari
 - Sukses: pesan hijau mis. **“npm install selesai.”**
 - Baris progres dihapus setelah selesai (tanpa baris kosong).
 
-**Urutan tipikal** setelah `**instal node`** / `**instal electron**`: `**npm instal**`, lalu `**start**` / `**dev**` jika relevan.
+**Urutan tipikal** setelah `**instal node`** / `**instal react`** / `**instal electron**`: `**npm instal**`, lalu `**start**` / `**dev**` jika relevan.
 
 ---
 
-## Progres UI 
+## Progres UI (`NexaNpm.js` + `npm.css`)
 
-- Dipakai untuk `**instal**`, `**modules**`, dan `**npm instal**`.
+### Unduhan & npm install
+
+- Dipakai untuk `**instal**`, `**modules**`, dan `**npm instal**` / `**npm install**`.
 - Stylesheet `**npm.css**` dimuat lewat `**NXUI.NexaStylesheet.Dom**` bila tersedia.
-- Interval animasi dihentikan lewat `**destroy()**` setelah operasi selesai.
+- Interval animasi dihentikan lewat `**destroy()**` setelah operasi selesai; baris progres dihapus dari DOM agar **tidak meninggalkan baris kosong** (`**nexaRemoveTerminalProgressRow**`).
+
+### `start` dan `stop` (serta `dev` saat memanggil server)
+
+- Baris progres bergaya NexaNpm dengan prefiks **`start:`** atau **`stop:`** (kelas `**.nexa-npm-term-wait**` di `**npm.css**`), spinner + fase teks berganti (ipc → spawn/listen → …).
+- Setelah HTML progres ditulis, renderer menunggu **satu frame** (`requestAnimationFrame` ganda, fallback timeout) agar tampilan **sempat muncul** sebelum IPC panjang.
+- **Expo web**: proses main menunggu **`Web Bundled`** di stdout Metro (hingga batas waktu) sebelum mengembalikan sukses — sejajar dengan munculnya log bundel di konsol Electron.
+- **`npm run dev` (Electron)**: main menunggu pola log siap (mis. **Express server running**, **Electron] Memuat**, Vite/webpack) sebelum mengembalikan sukses — sejajar dengan jendela/server proyek.
+- Setelah IPC selesai, baris **`start:`** / **`stop:`** dihapus; muncul pesan sukses / bantuan seperti biasa.
 
 ---
 
@@ -185,12 +218,36 @@ Menjalankan `**npm install**` sekali di **cwd** (mengisi `**node_modules`** dari
 
 | Perintah           | Fungsi                                                                                                                        |
 | ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `**stop**`         | Menghentikan **semua** server static / proses terkait yang dikelola terminal (sesuai `**stopStaticServe`** di main).          |
-| `**stop 4000**`    | Hanya menghentikan server di **port 4000**.                                                                                   |
-| `**stop npm`**     | Menghentikan `**npm run dev**` yang terikat **folder cwd** saat ini (henti per-root proyek).                                  |
+| `**stop**`         | Menghentikan **semua** server static, `**node server.js**` per port, dan **npm run dev / Expo web** yang dilacak Nexa (`**stopStaticServe**`). |
+| `**stop 4000**`    | Menghentikan server di **port 4000** dan **Expo web** Nexa di port itu jika ada.                                                |
+| `**stop npm`**     | Menghentikan **`npm run dev`** atau **Expo web** Nexa untuk **cwd** (path dinormalisasi di Windows).                          |
 | `**restart`**      | Meminta **port**, lalu **stop + start** ulang untuk server di port itu (root dari server yang jalan atau **cwd** jika perlu). |
 | `**restart 4000`** | Restart langsung di port **4000**.                                                                                            |
 
+Proses hanya terlacak jika dimulai lewat **`start` / `dev`** di **sesi Nexa yang sama**. Jika `**stop**` tidak menemukan apa pun, coba **`stop npm`** di folder proyek atau **`stop <port>`**. Saat menunggu IPC, tampil progres **`stop:`** (bagian **Progres UI**).
+
+- Pesan **`stop`** (semua) dirangkum singkat, mis. **`Dihentikan · port 3008 · 2 proyek`** — tanpa memuat daftar path panjang; detail folder pakai **`servers`**.
+- **`stop npm`**: pesan singkat **`Expo dihentikan`** / **`npm dev dihentikan`** (tanpa baris path).
+
+---
+
+## Perintah `servers`
+
+| Perintah     | Fungsi |
+| ------------ | ------ |
+| `**servers**` | Menggabungkan **IndexedDB** store **`bucketsServer`** (sama pola persistensi dengan riwayat perintah di **`bucketsCli`**) dan **proses live** dari **Electron** (`**getStaticServeStatus**`). |
+
+- Setiap **`start` / `dev`** yang sukses menulis satu entri ke **`bucketsServer`** (`**NXUI.ref.set**`): jenis (`static`, `node`, `npm-dev`, `expo-web`), port bila ada, root folder, status `running`.
+- **`stop`** / **`stop npm`** memperbarui entri yang cocok menjadi `stopped`.
+- Kolom status pada tabel: **`jalan`** (proses ada di main), **`tidak jalan`** (IndexedDB masih `running` tapi tidak ada di main — disinkronkan ke `stopped`), **`berhenti`**, atau **`tersimpan`** bila **Electron** tidak tersedia (hanya isi IndexedDB).
+
+### Tampilan tabel (`tabelRaw.js`)
+
+- Output dirender dengan **`createTable`** dari `**tabelRaw.js**`: tabel **ASCII** (border + header) di dalam `**<pre class="command-line-start-help …">**`.
+- Kolom: **`#`** (nomor urut), **`Jenis`**, **`Port`** (`—` jika tidak ada, mis. **npm dev**), **`Status`**, **`Folder`** (path root proyek). Path panjang bisa dipotong sesuai opsi `**maxWidth**` di kode.
+- Agar **garis tabel sejajar**, baris output **`servers`** memakai **`hideTime()`** (timestamp `[jam:menit:detik]` tidak ditampilkan di baris itu) dan **`block`** pada entry — pola sama seperti **`ls`** / bantuan **`start`** yang memakai tabel atau `**<pre>**` lebar penuh.
+
+Server **Express Nexa** (`index.js`) tidak masuk daftar ini — hanya **proyek folder** dari terminal.
 
 ---
 
@@ -215,6 +272,7 @@ Menjalankan `**npm install**` sekali di **cwd** (mengisi `**node_modules`** dari
 - `**config.js**` mengatur URL / port **aplikasi Nexa**; jangan menyamakan port itu dengan **port proyek** di terminal kecuali Anda sengaja mengatur demikian.
 - File `**.htaccess`** menandai proyek yang biasa di-serve **Apache**; di stack Node, aturan setara biasanya di `**index.js`** / middleware.
 - Untuk melihat **Nexa** di browser: jalankan `**npm start`** atau `**node index.js**` dari root Nexa, lalu buka URL di `**config.js**`.
+- **Expo / React Native (web)** dari terminal Nexa: dev di **localhost**; URL dibuka lewat **`openMobilePreview`** (jendela Electron), fallback **`openExternal`** (browser) jika perlu.
 
 ---
 
