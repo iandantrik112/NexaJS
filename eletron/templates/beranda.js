@@ -15,7 +15,7 @@ export async function beranda(page, route) {
     //   const content = await htmlDom.html("home", {
     //     title: "Home Page",
     //     description: "Ini adalah halaman Home",
-    //     route: routeName,
+    //     route: routeName, 
     //   }); // template default: 'theme'
     //   container.innerHTML = content.content;
     // } catch (error) {
@@ -33,7 +33,7 @@ export async function beranda(page, route) {
             <h1 class="main-splash__welcome">NexaJS Framework</h1>
           </div>
           <p class="main-splash__lead">
-         Platform web modern dalam satu tempat untuk struktur yang rapi dan siap dikembangkan.
+         Platform Desktop modern dalam satu tempat untuk struktur yang rapi dan siap dikembangkan.
           </p>
         </div>
         `;

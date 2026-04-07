@@ -1,10 +1,7 @@
 import { components } from '/nexa-context/index.js';
-
+import "./assets/modules/Nexa.js";
 /** Diisi server lewat index.html (window.__NEXA_ENDPOINT__) — bukan import /config.js (diblokir publik). */
 const config = globalThis.__NEXA_ENDPOINT__;
-if (!config) {
-  throw new Error("Missing window.__NEXA_ENDPOINT__ — buka app lewat server Express, bukan file://");
-}
 // … konfigurasi, lalu misalnya:
 const req = new NXUI.Tatiye({
   /** Base app + API + endpoint tambahan (multi-API) → NEXA.url, NEXA.apiBase, NEXA.endpoint, plus NEXA.nama untuk tiap URL string */
@@ -61,7 +58,38 @@ const req = new NXUI.Tatiye({
   route: [
     "beranda",
     "about",
-    "blog"
+    "modal",
+    "blog",
+    "contact",
+    "guides",
+    "exsampel",
+    "colom",
+    "form",
+    "ds/data",
+    "wizard",
+    "tables",
+    "notifikasi",
+    "voice",
+    "markdown",
+    "field",
+    "checkable",
+    "qrcode",
+    "prind",
+    "escpos",
+    "lightbox",
+    "svg",
+    "scimport",
+    "filetype",
+    "dropdown",
+    "grid",
+    "sidebar",
+    "sortable",
+    "scroll",
+    "filter",
+    "eventhandling",
+    "network",
+    "geolocation",
+    "terminal",
   ],
   onRoute: (routeInfo) => {
     /** routeMeta dari NexaRoute.routeMetaByRoute; defaultRouteMeta dari konfigurasi NXUI.Page */

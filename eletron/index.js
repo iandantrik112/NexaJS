@@ -8,6 +8,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs').promises;
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const config = require('./config.js');
 const { buildContentSecurityPolicy } = require('./electron/csp.js');
 
@@ -111,6 +112,139 @@ app.use((req, res, next) => {
   next();
 });
 
+function clientOriginFromReq(req) {
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+  if (!host || typeof host !== 'string') return null;
+  let proto = req.headers['x-forwarded-proto'];
+  if (typeof proto === 'string' && proto.includes(',')) {
+    proto = proto.split(',')[0].trim();
+  }
+  if (!proto) proto = req.protocol || 'http';
+  return `${proto}://${host}`;
+}
+
+function rewriteUpstreamRedirectHeaders(proxyRes, req, upstreamOrigin) {
+  const clientOrigin = clientOriginFromReq(req);
+  if (!clientOrigin) return;
+
+  let upstreamHost;
+  try {
+    upstreamHost = new URL(upstreamOrigin).hostname;
+  } catch {
+    upstreamHost = null;
+  }
+
+  const rewrite = (val) => {
+    if (typeof val !== 'string' || !val.trim()) return val;
+    try {
+      const parsed = new URL(val, clientOrigin);
+      const sameOrigin = parsed.origin === upstreamOrigin;
+      const sameHost = upstreamHost && parsed.hostname === upstreamHost;
+      if (sameOrigin || sameHost) {
+        return clientOrigin + parsed.pathname + parsed.search + parsed.hash;
+      }
+    } catch {
+      /* keep original */
+    }
+    return val;
+  };
+
+  if (proxyRes.headers.location) {
+    proxyRes.headers.location = rewrite(proxyRes.headers.location);
+  }
+  if (proxyRes.headers['content-location']) {
+    proxyRes.headers['content-location'] = rewrite(proxyRes.headers['content-location']);
+  }
+}
+
+function patchReqUrlToOriginal(req, res, next) {
+  if (req.originalUrl) req.url = req.originalUrl;
+  next();
+}
+
+function mountUpstreamProxies() {
+  let listenerOrigin;
+  try {
+    listenerOrigin = new URL(buildServerConfig().baseUrl).origin;
+  } catch {
+    try {
+      listenerOrigin = new URL(config.url || 'http://localhost:3000').origin;
+    } catch {
+      listenerOrigin = 'http://localhost:3000';
+    }
+  }
+
+  try {
+    if (config.urlApi && /^https?:\/\//i.test(config.urlApi)) {
+      const u = new URL(config.urlApi);
+      const upstreamOrigin = u.origin;
+      if (upstreamOrigin !== listenerOrigin) {
+        const apiProxy = createProxyMiddleware({
+          target: upstreamOrigin,
+          changeOrigin: true,
+          on: {
+            proxyRes(proxyRes, req, res) {
+              rewriteUpstreamRedirectHeaders(proxyRes, req, upstreamOrigin);
+            },
+          },
+        });
+        app.use('/api', patchReqUrlToOriginal, apiProxy);
+        console.log(`🔀 API proxy: /api → ${config.urlApi} (dari config.urlApi)`);
+      }
+    }
+  } catch (e) {
+    console.warn('⚠️ API proxy tidak dipasang:', e && e.message ? e.message : e);
+  }
+
+  try {
+    if (config.drive && /^https?:\/\//i.test(config.drive)) {
+      const d = new URL(config.drive);
+      const upstreamOrigin = d.origin;
+      if (upstreamOrigin !== listenerOrigin) {
+        const basePath = d.pathname.replace(/\/$/, '') || '/assets/drive';
+        const driveProxy = createProxyMiddleware({
+          target: upstreamOrigin,
+          changeOrigin: true,
+          on: {
+            proxyRes(proxyRes, req, res) {
+              rewriteUpstreamRedirectHeaders(proxyRes, req, upstreamOrigin);
+            },
+          },
+        });
+        app.use(basePath, patchReqUrlToOriginal, driveProxy);
+        console.log(`🔀 Drive proxy: ${basePath} → ${config.drive}`);
+      }
+    }
+  } catch (e) {
+    console.warn('⚠️ Drive proxy tidak dipasang:', e && e.message ? e.message : e);
+  }
+
+  try {
+    if (config.rebit && /^https?:\/\//i.test(config.rebit)) {
+      const r = new URL(config.rebit);
+      const upstreamOrigin = r.origin;
+      if (upstreamOrigin !== listenerOrigin) {
+        const basePath = r.pathname.replace(/\/$/, '') || '/rebit';
+        const rebitProxy = createProxyMiddleware({
+          target: upstreamOrigin,
+          changeOrigin: true,
+          on: {
+            proxyRes(proxyRes, req, res) {
+              rewriteUpstreamRedirectHeaders(proxyRes, req, upstreamOrigin);
+            },
+          },
+        });
+        app.use(basePath, patchReqUrlToOriginal, rebitProxy);
+        console.log(`🔀 Rebit proxy: ${basePath} → ${config.rebit}`);
+      }
+    }
+  } catch (e) {
+    console.warn('⚠️ Rebit proxy tidak dipasang:', e && e.message ? e.message : e);
+  }
+}
+
+mountUpstreamProxies();
+
 /** Path ke electron/components di dalam app.asar (produksi) atau proyek (dev). */
 function resolveElectronComponentsDir() {
   return path.join(__dirname, 'electron', 'components');
@@ -122,10 +256,58 @@ function escapeHtmlAttrValue(s) {
   return String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;');
 }
 
-async function sendSpaHtml(res) {
+function buildClientEndpointPayload(req) {
+  const raw = JSON.parse(JSON.stringify(config));
+  let baseUrl = SERVER_CONFIG.baseUrl || raw.url || 'http://127.0.0.1:3000';
+  let origin;
+  try {
+    origin = new URL(baseUrl).origin;
+  } catch {
+    origin = 'http://127.0.0.1:3000';
+  }
+  if (req && typeof req.get === 'function') {
+    const host = req.get('host');
+    if (host) {
+      let proto = req.headers['x-forwarded-proto'];
+      if (typeof proto === 'string' && proto.includes(',')) {
+        proto = proto.split(',')[0].trim();
+      }
+      if (!proto) proto = req.protocol || 'http';
+      origin = `${proto}://${host}`;
+      baseUrl = origin;
+    }
+  }
+  let appOrigin;
+  try {
+    appOrigin = new URL(config.url || baseUrl).origin;
+  } catch {
+    appOrigin = origin;
+  }
+  raw.url = baseUrl;
+  for (const key of ['urlApi', 'drive', 'rebit']) {
+    const v = raw[key];
+    if (typeof v !== 'string' || !v.startsWith('http')) continue;
+    try {
+      const u = new URL(v);
+      if (u.origin !== origin) {
+        const p = u.pathname.replace(/\/$/, '');
+        raw[key] = origin + p + u.search + u.hash;
+        continue;
+      }
+      if (u.origin === appOrigin) {
+        raw[key] = origin + u.pathname + u.search + u.hash;
+      }
+    } catch {
+      /* keep original */
+    }
+  }
+  return raw;
+}
+
+async function sendSpaHtml(req, res) {
   const htmlPath = path.join(__dirname, 'index.html');
   let html = await fs.readFile(htmlPath, 'utf8');
-  const payload = JSON.stringify(config);
+  const payload = JSON.stringify(buildClientEndpointPayload(req));
   const csp = buildContentSecurityPolicy(config);
   const cspMeta = `<meta http-equiv="Content-Security-Policy" content="${escapeHtmlAttrValue(csp)}">`;
   const endpointScript = `<script>window.__NEXA_ENDPOINT__=${payload}</script>`;
@@ -140,7 +322,7 @@ async function sendSpaHtml(res) {
 
 app.get(['/', '/index.html'], async (req, res, next) => {
   try {
-    await sendSpaHtml(res);
+    await sendSpaHtml(req, res);
   } catch (err) {
     next(err);
   }
@@ -150,7 +332,7 @@ app.use(express.static(path.join(__dirname), staticOpts));
 
 app.use('/assets', express.static(path.join(__dirname, 'assets'), staticOpts));
 
-app.get('/api/status', (req, res) => {
+app.get('/nexa-dev/status', (req, res) => {
   res.json({
     status: 'online',
     message: 'Express server is running',
@@ -158,7 +340,7 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-app.get('/api/info', (req, res) => {
+app.get('/nexa-dev/info', (req, res) => {
   res.json({
     platform: process.platform,
     arch: process.arch,
@@ -171,7 +353,7 @@ app.get('/api/info', (req, res) => {
   });
 });
 
-app.post('/api/message', (req, res) => {
+app.post('/nexa-dev/message', (req, res) => {
   const { message } = req.body;
   console.log('📨 Received message:', message);
   res.json({
@@ -181,7 +363,7 @@ app.post('/api/message', (req, res) => {
   });
 });
 
-app.get('/api/users', (req, res) => {
+app.get('/nexa-dev/users', (req, res) => {
   res.json({
     users: [
       { id: 1, name: 'John Doe', email: 'john@example.com' },
@@ -190,7 +372,7 @@ app.get('/api/users', (req, res) => {
   });
 });
 
-app.post('/api/users', (req, res) => {
+app.post('/nexa-dev/users', (req, res) => {
   const { name, email } = req.body;
   res.json({
     success: true,
@@ -210,10 +392,7 @@ app.use((req, res, next) => {
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     return next();
   }
-  if (req.path.startsWith('/api')) {
-    return res.status(404).json({ error: 'Not found' });
-  }
-  sendSpaHtml(res).catch(next);
+  sendSpaHtml(req, res).catch(next);
 });
 
 async function startServer() {

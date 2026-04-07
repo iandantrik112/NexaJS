@@ -2,15 +2,27 @@
 'use strict';
 
 module.exports = {
-  url: "http://127.0.0.1:3100",
-  urlApi: "http://localhost:/api",        //  url jika menggunakan drive backend Nexa Dom Framework
-  drive: "http://localhost/assets/drive", // url jika menggunakan drive backend Nexa Dom Framework
-  typicode: "https://jsonplaceholder.typicode.com/photos",// url typicode backend umum baca dokuentasi NXUI.Storage().api(row, body)
-  firebaseConfig:false, // jika tidak menggunakan firebase backend maka isi dengan false
-  // Baca dokumentasi NXUI.Inisiasi: App.js
-  // sesuaikan dengan backend yang digunakan degan nama yan kamu butuhkan dan cek di NEXA.apikamu
-  // variabel apikamu:'http://localhost:/api_kamu';
-  // variabel apidrive_kamu:'http://localhost/assets/drive_kamu';
+  url: 'http://localhost:4007',
+  electronInitialPath: '/beranda',
+  /**
+   * url jika menggunakan drive backend Nexa Dom Framework
+   * URL API PHP/backend sebenarnya (boleh host/port lain).
+   * server.js mem-proxy /api → host ini; browser disuntik same-origin …/api (bukan akses langsung ke URL ini).
+   */
+  urlApi: "http://192.168.1.5/api",
+  /** Sama pola: path /assets/drive di origin SPA di-proxy ke URL ini jika beda host */
+  drive: "http://192.168.1.5/assets/drive",
 
+
+  // url jika menggunakan rebit backend sisipkan ke public di Framework anda folder rebit
+  rebit: `http://192.168.1.5:8006/rebit`,
+
+
+  // url typicode backend umum baca dokuentasi NXUI.Storage().api(row, body) 
+  typicode: "https://jsonplaceholder.typicode.com/photos",
+  // jika tidak menggunakan firebase backend maka isi dengan false
+  firebaseConfig: false,
+  // buat variable api backend anda di Framework anda dengan nama apiBackend dan ases megunakan NEXA.apiBackend
+  // CONTOH:
+  //apiBackend: "http://192.168.1.5/api",
 };
-

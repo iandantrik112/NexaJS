@@ -178,23 +178,6 @@ export function Storage() {
     return url;
   };
 
-  // Normalize apiBase before using it
-  const normalizedApiBase = normalizeUrl(NEXA.apiBase || '');
-  
-  
-  const baseURL = normalizeUrl(normalizedApiBase + "/outside");
-  const CURL = normalizedApiBase;
-  const baseAPI = normalizedApiBase;
-  const userid =NEXA.userId;
-  const settext = NEXA.controllers.packages + "Controllers";
-  let CapitalControllers = settext.charAt(0).toUpperCase() + settext.slice(1);
-
-  // ✅ Helper: Hapus double slash kecuali setelah "http(s):"
-  const cleanURL = (url) => {
-    // First normalize (HTTPS conversion), then fix double slashes
-    return normalizeUrl(url);
-  };
-
   // ✅ Helper: Gabung URL dengan aman
   const joinURL = (...parts) => {
     if (parts.length === 0) return '';
@@ -217,6 +200,21 @@ export function Storage() {
       .filter(part => part);
     return normalizeUrl('/' + allParts.join('/'));
   };
+
+  const cleanURL = (url) => normalizeUrl(url);
+
+  // NEXA.apiBase wajib basis API (…/api). OutsideController di PHP: …/api/outside
+  let normalizedApiBase = normalizeUrl(NEXA.apiBase || '');
+  const apiRootTrim = (normalizedApiBase || '').replace(/\/+$/, '');
+  if (apiRootTrim && !/\/api$/i.test(apiRootTrim)) {
+    normalizedApiBase = normalizeUrl(joinURL(normalizedApiBase, 'api'));
+  }
+  const baseURL = normalizeUrl(joinURL(normalizedApiBase, 'outside'));
+  const CURL = normalizedApiBase;
+  const baseAPI = normalizedApiBase;
+  const userid = NEXA.userId;
+  const settext = NEXA.controllers.packages + 'Controllers';
+  let CapitalControllers = settext.charAt(0).toUpperCase() + settext.slice(1);
 
   // ✅ Helper: Cek apakah userid valid (tidak false/null/undefined)
   const hasValidUserId = () => {

@@ -471,8 +471,9 @@ if (typeof window !== "undefined") {
   };
 
   /**
-   * Gabungkan konfigurasi endpoint (multi-API) ke NEXA.endpoint dan salin URL/string ke properti top-level
-   * (kecuali url, urlApi, apiBase, dan kunci sistem).
+   * Gabungkan konfigurasi endpoint (multi-API) ke NEXA.endpoint dan salin string ke properti top-level.
+   * `url` / `apiBase` tidak di-mirror (dikelola updateNEXAUrl). `urlApi` di-mirror agar inspeksi konsol jelas;
+   * sumber kebenaran untuk fetch tetap `NEXA.apiBase` (= urlApi tanpa slash akhir).
    */
   const syncNexaEndpoints = function (endpoint) {
     if (typeof window === 'undefined' || !window.NEXA) return;
@@ -492,7 +493,6 @@ if (typeof window !== "undefined") {
     window.NEXA.endpoint = out;
     const skipFlat = new Set([
       'url',
-      'urlApi',
       'apiBase',
       'userId',
       'controllers',

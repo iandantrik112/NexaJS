@@ -1,18 +1,10 @@
-/** true jalan di jendela Electron (bukan browser biasa). */
-function nexaRunsInElectron() {
-    return typeof navigator !== 'undefined' && /Electron\//.test(navigator.userAgent || '');
-}
-
 export class NexaGeolocation {
     constructor(options = {}) {
         // Default options untuk Geolocation API
-        // Di Electron, enableHighAccuracy:true memicu Network Location Provider Google → sering HTTP 403 & code 2.
-        // ipFallback: perkiraan koordinat dari layanan IP publik jika navigator gagal (tanpa GOOGLE_API_KEY).
         this.defaultOptions = {
-            enableHighAccuracy: !nexaRunsInElectron(),
-            ipFallback: nexaRunsInElectron(),
-            timeout: 10000,
-            maximumAge: 300000,
+            enableHighAccuracy: true,    // Akurasi tinggi (menggunakan GPS jika tersedia)
+            timeout: 10000,              // Timeout 10 detik
+            maximumAge: 300000           // Cache posisi selama 5 menit
         };
         
         // Merge dengan options yang diberikan user
@@ -42,64 +34,6 @@ export class NexaGeolocation {
         }
         return true;
     }
-
-    /**
-     * Posisi kasar dari IP (tanpa GOOGLE_API_KEY) — untuk Electron saat network location Google 403.
-     * @returns {Promise<object>}
-     */
-    async tryIpGeolocationFallback() {
-        const endpoints = [
-            async () => {
-                const r = await fetch('https://ipapi.co/json/', { credentials: 'omit' });
-                if (!r.ok) throw new Error('ipapi');
-                const j = await r.json();
-                if (j.error || j.latitude == null || j.longitude == null) throw new Error('ipapi');
-                return { lat: j.latitude, lng: j.longitude };
-            },
-            async () => {
-                const r = await fetch(
-                    'http://ip-api.com/json/?fields=status,message,lat,lon',
-                    { credentials: 'omit' }
-                );
-                if (!r.ok) throw new Error('ip-api');
-                const j = await r.json();
-                if (j.status !== 'success' || j.lat == null || j.lon == null) throw new Error('ip-api');
-                return { lat: j.lat, lng: j.lon };
-            },
-        ];
-        let lastErr;
-        for (const fn of endpoints) {
-            try {
-                const { lat, lng } = await fn();
-                if (typeof lat !== 'number' || typeof lng !== 'number' || Number.isNaN(lat + lng)) continue;
-                return this.formatApproximatePosition(lat, lng, 50000, 'ip');
-            } catch (e) {
-                lastErr = e;
-            }
-        }
-        throw lastErr || new Error('IP geolocation failed');
-    }
-
-    /**
-     * Sama bentuknya dengan formatPosition; akurasi besar (perkiraan kota/wilayah).
-     */
-    formatApproximatePosition(latitude, longitude, accuracyMeters, source) {
-        return {
-            latitude,
-            longitude,
-            accuracy: accuracyMeters,
-            altitude: null,
-            altitudeAccuracy: null,
-            heading: null,
-            speed: null,
-            timestamp: Date.now(),
-            datetime: new Date(),
-            coordinates: `${latitude}, ${longitude}`,
-            googleMapsUrl: `https://www.google.com/maps?q=${latitude},${longitude}`,
-            distanceTo: (lat, lng) => this.calculateDistance(latitude, longitude, lat, lng),
-            raw: { source, approximate: true },
-        };
-    }
     
     /**
      * Mendapatkan posisi saat ini (sekali)
@@ -108,60 +42,34 @@ export class NexaGeolocation {
      */
     getCurrentPosition(customOptions = {}) {
         return new Promise((resolve, reject) => {
-            const options = { ...this.options, ...customOptions };
-            const useIpFallback = options.ipFallback !== false && nexaRunsInElectron();
-
-            const fail = (errorData) => {
-                if (this.onError) this.onError(errorData);
-                reject(errorData);
-            };
-
             if (!this.isSupported) {
-                if (useIpFallback) {
-                    this.tryIpGeolocationFallback()
-                        .then((data) => {
-                            this.lastPosition = data;
-                            if (this.onSuccess) this.onSuccess(data);
-                            resolve(data);
-                        })
-                        .catch(() => {
-                            fail(this.createError('NOT_SUPPORTED', 'Geolocation API tidak didukung'));
-                        });
-                    return;
-                }
                 reject(this.createError('NOT_SUPPORTED', 'Geolocation API tidak didukung'));
                 return;
             }
+            
+            const options = { ...this.options, ...customOptions };
             
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const positionData = this.formatPosition(position);
                     this.lastPosition = positionData;
                     
+                    // Trigger callback jika ada
                     if (this.onSuccess) {
                         this.onSuccess(positionData);
                     }
                     
                     resolve(positionData);
                 },
-                async (error) => {
-                    const unavailable = error && error.code === 2;
-                    if (useIpFallback && unavailable) {
-                        try {
-                            console.info(
-                                '[NexaGeolocation] navigator.geolocation gagal (sering 403 Google di Electron) — memakai perkiraan lokasi dari IP.'
-                            );
-                            const data = await this.tryIpGeolocationFallback();
-                            this.lastPosition = data;
-                            if (this.onSuccess) this.onSuccess(data);
-                            resolve(data);
-                            return;
-                        } catch {
-                            /* lanjut ke error asli */
-                        }
-                    }
+                (error) => {
                     const errorData = this.handleError(error);
-                    fail(errorData);
+                    
+                    // Trigger callback jika ada
+                    if (this.onError) {
+                        this.onError(errorData);
+                    }
+                    
+                    reject(errorData);
                 },
                 options
             );
@@ -286,9 +194,7 @@ export class NexaGeolocation {
             case error.POSITION_UNAVAILABLE:
                 errorInfo.type = 'POSITION_UNAVAILABLE';
                 errorInfo.userMessage = 'Informasi lokasi tidak tersedia';
-                errorInfo.suggestion = nexaRunsInElectron()
-                    ? 'Tanpa GOOGLE_API_KEY, navigator.geolocation sering 403. getCurrentPosition otomatis mencoba perkiraan lokasi dari IP (ipFallback, default true). Set ipFallback:false untuk menonaktifkan, atau pasang GOOGLE_API_KEY di .env.'
-                    : 'Pastikan GPS aktif atau koneksi internet stabil';
+                errorInfo.suggestion = 'Pastikan GPS aktif atau koneksi internet stabil';
                 break;
                 
             case error.TIMEOUT:
@@ -303,15 +209,6 @@ export class NexaGeolocation {
                 errorInfo.suggestion = 'Silakan coba lagi';
         }
         
-        if (
-            nexaRunsInElectron() &&
-            error.code === error.POSITION_UNAVAILABLE &&
-            String(error.message || '').toLowerCase().includes('google')
-        ) {
-            console.warn(
-                '[NexaGeolocation] Google Network Location menolak permintaan (403) di Electron — gunakan enableHighAccuracy:false (default kelas ini).'
-            );
-        }
         console.error('Geolocation Error:', errorInfo);
         return errorInfo;
     }

@@ -1,6 +1,6 @@
 {
-  "name": "nexa-eletron",
-  "version": "1.0.0",
+  "name": "eletron-nexa",
+  "version": "1.0.6",
   "description": "",
   "private": true,
   "main": "electron.js",
@@ -34,7 +34,8 @@
     "adm-zip": "^0.5.17",
     "cors": "^2.8.6",
     "express": "^4.22.1",
-    "firebase": "^9.23.0"
+    "firebase": "^9.23.0",
+    "http-proxy-middleware": "^3.0.5"
   },
   "devDependencies": {
     "chokidar": "^3.6.0",
@@ -46,7 +47,7 @@
   },
   "build": {
     "appId": "com.eletron.nexa",
-    "productName": "Nexa Eletron",
+    "productName": "NexaEletron",
     "directories": {
       "output": "dist"
     },
@@ -82,8 +83,8 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Nexa Eletron",
-      "artifactName": "Setup-${version}.${ext}",
+      "shortcutName": "NexaEletron",
+      "artifactName": "NexaEletron-Setup-${version}.${ext}",
       "perMachine": false,
       "allowElevation": true
     },

@@ -1,5 +1,5 @@
-// Firebase v9+ modular SDK imports
-import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/9.12.1/firebase-app.js";
+// Firebase v9+ modular SDK — bundel lokal di assets/modules/Firebase/vendor (offline, tanpa gstatic)
+import { initializeApp, getApp } from "/assets/modules/Firebase/vendor/firebase-app.js";
 import {
   getDatabase,
   ref,
@@ -19,14 +19,14 @@ import {
   equalTo,
   startAt,
   endAt
-} from "https://www.gstatic.com/firebasejs/9.12.1/firebase-database.js";
+} from "/assets/modules/Firebase/vendor/firebase-database.js";
 import {
   getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
-} from "https://www.gstatic.com/firebasejs/9.12.1/firebase-auth.js";
+} from "/assets/modules/Firebase/vendor/firebase-auth.js";
 import {
   getStorage,
   ref as storageRef,
@@ -34,21 +34,11 @@ import {
   getDownloadURL,
   deleteObject,
   uploadBytesResumable,
-} from "https://www.gstatic.com/firebasejs/9.12.1/firebase-storage.js";
+} from "/assets/modules/Firebase/vendor/firebase-storage.js";
 
-/** Dari `globalThis.NEXA.firebaseConfig` (endpoint `App.js` → `syncNexaEndpoints`). Lazy: jangan baca saat modul load. */
-export function getFirebaseConfig() {
-  const g = typeof globalThis !== "undefined" ? globalThis : {};
-  const n = g.NEXA;
-  if (!n) return null;
-  const db = n.firebaseConfig;
-  return db && typeof db === "object" ? db : null;
-}
+import { getFirebaseConfig, isFirebaseConfigured } from "./nexaFirebaseConfig.js";
 
-/** True jika endpoint menyertakan objek Firebase (tanpa ini jangan panggil SDK). */
-export function isFirebaseConfigured() {
-  return getFirebaseConfig() != null;
-}
+export { getFirebaseConfig, isFirebaseConfigured };
 
 export const FirebaseManager = {
   app: null,
