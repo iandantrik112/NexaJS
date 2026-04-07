@@ -14,19 +14,11 @@ export async function blog(page, route) {
     // Jika ada sub-route, tampilkan konten sub-route (sama pola seperti posdip/templates/assets/berita.js)
     if (subRoute) {
 
-      const slug = routeName.split('/').filter(Boolean).pop();
-      const data4 = await NXUI.Storage().example().newsId({ id: slug });
-      console.log("data4:", data4);
-
-
-
-console.log(NEXA.drive);
-      const d = data4?.data;
+      const d = NXUI.findBySlug(await NXUI.Storage().get(NEXA.typicode), subRoute, { pubdate: "02/07/2026", prefix: "berita" });
       if (d) {
         route.routeMetaByRoute.set(page, {
           title: `${d.title} | devjs`,
-          description: d.deskripsi || DEFAULT_BLOG_META.description,
-          ogImage:`${NEXA.drive}/${d.images}`
+          description: `Album ${d.albumId || "-"} - Photo ${d.id || "-"}`,
         });
       } else {
         route.routeMetaByRoute.set(page, { ...DEFAULT_BLOG_META });
@@ -35,9 +27,10 @@ console.log(NEXA.drive);
       container.innerHTML = `
           <article class="nx-page">
             <h1 class="nx-page__title">${d ? d.title : "Artikel tidak ditemukan"}</h1>
-            ${d?.deskripsi ? `<p class="nx-page__lead"><strong>${d.deskripsi}</strong></p>` : ""}
+            ${d?.thumbnailUrl ? `<p class="nx-page__lead"><strong>Thumbnail:</strong> ${d.thumbnailUrl}</p>` : ""}
+            ${d?.albumId ? `<p class="nx-page__lead"><strong>Album:</strong> ${d.albumId}</p>` : ""}
             <p class="nx-page__meta"><span class="nx-page__label">Route:</span> ${routeName}</p>
-            <p class="nx-page__meta"><span class="nx-page__label">Slug:</span> ${slug}</p>
+            <p class="nx-page__meta"><span class="nx-page__label">Slug:</span> ${subRoute}</p>
             <hr class="nx-page__rule" />
             <nav class="nx-page__nav">
               <a href="/blog">← Kembali ke blog</a>
@@ -46,8 +39,7 @@ console.log(NEXA.drive);
         `;
     } else {
       route.routeMetaByRoute.set(page, { ...DEFAULT_BLOG_META });
-      const data4 = await NXUI.Storage().example().news({ news: 1 });
-      const items = data4?.data || [];
+      const items = await NXUI.Storage().get(NEXA.typicode);
       container.innerHTML = `
           <article class="nx-page">
             <h1 class="nx-page__title">Guides Page</h1>
@@ -55,11 +47,10 @@ console.log(NEXA.drive);
             <p class="nx-page__meta"><span class="nx-page__label">Route:</span> ${routeName}</p>
             <div class="nx-page__blog-list">
               ${items.map((item) => {
-                const slug = NXUI.createSlug(item.pubdate, item.slug, item.id, "berita");
+                const slug = NXUI.createSlug('02/07/2026', item.title, item.id, "berita");
                 return `
                 <article class="nx-page__blog-card">
                   <a class="nx-page__blog-card-title" href="/blog/${slug}">${item.title}</a>
-                  <img src="${NEXA.drive}/${item.images}" class="nx-page__blog-card-img img-responsive" alt="" />
                 </article>`;
               }).join("")}
             </div>

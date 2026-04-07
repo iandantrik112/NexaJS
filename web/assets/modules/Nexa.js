@@ -260,6 +260,28 @@ const getSlugId = (slug, prefix = 'slug') => {
     return null;
   }
 };
+/** Cari item berdasarkan slug hasil `createSlug(...)`. */
+const findBySlug = (list, slug, options = {}) => {
+  if (!Array.isArray(list) || !slug) return null;
+  const {
+    pubdate = null,
+    prefix = "slug",
+    titleKey = "title",
+    idKey = "id",
+  } = options || {};
+  const targetSlug = String(slug).replace(/^\/+|\/+$/g, "");
+
+  return (
+    list.find((item) => {
+      if (!item || typeof item !== "object") return false;
+      const itemSlug =
+        pubdate != null && pubdate !== ""
+          ? createSlug(pubdate, item[titleKey], item[idKey], prefix)
+          : createSlug(item[titleKey], item[idKey], prefix);
+      return String(itemSlug) === targetSlug;
+    }) || null
+  );
+};
 export function initSelect2(selector, options = {}) {
   // Check if jQuery and Select2 are available
   if (typeof $ === "undefined") {
@@ -538,6 +560,7 @@ if (typeof window !== "undefined") {
     extractIdFromSlug: extractIdFromSlug,
     setSlugId: setSlugId,
     getSlugId: getSlugId,
+    findBySlug: findBySlug,
     initSelect2,  
     onSelect2Change,
     onSelect2Open,
@@ -2186,6 +2209,7 @@ export {
   extractIdFromSlug,
   setSlugId,
   getSlugId,
+  findBySlug,
   NexaDomClass as NexaDomClass,
   StorageData,
   StorageModelData,
@@ -2222,6 +2246,7 @@ export default {
   extractIdFromSlug,
   setSlugId,
   getSlugId,
+  findBySlug,
   NexaDomClass,
   StorageData,
   StorageModelData,

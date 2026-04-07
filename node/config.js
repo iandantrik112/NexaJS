@@ -17,7 +17,7 @@ const config = {
 
 
   // url typicode backend umum baca dokuentasi NXUI.Storage().api(row, body) 
-  typicode: "https://jsonplaceholder.typicode.com/photos",
+  typicode: "https://jsonplaceholder.typicode.com/photos?_limit=5",
   // jika tidak menggunakan firebase backend maka isi dengan false
   firebaseConfig: false,
   // buat variable api backend anda di Framework anda dengan nama apiBackend dan ases megunakan NEXA.apiBackend
