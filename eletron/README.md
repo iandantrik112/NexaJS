@@ -2,6 +2,66 @@
 
 Aplikasi desktop **Electron** yang menjalankan **Express** sebagai server lokal dan memuat antarmuka **Nexa** (SPA) di jendela Chromium. Cocok untuk pengembangan dan distribusi satu paket: backend ringan + frontend modul `assets/modules` + halaman di `templates/`.
 
+## Daftar Isi
+
+- [Alur diagram kerja](#alur-diagram-kerja)
+- [Struktur proyek](#struktur-proyek)
+- [Arsitektur singkat](#arsitektur-singkat)
+- [Prasyarat](#prasyarat)
+- [Instalasi](#instalasi)
+- [Menjalankan](#menjalankan)
+  - [Hot reload (`npm run dev`)](#hot-reload-npm-run-dev)
+- [Konfigurasi](#konfigurasi)
+  - [`config.js`](#configjs)
+  - [Ikon & build Windows](#ikon--build-windows)
+  - [Variabel lingkungan (opsional)](#variabel-lingkungan-opsional)
+- [File penting](#file-penting)
+- [`electron/electronShell.js` — layout jendela dan menu konteks](#electronelectronshelljs--layout-jendela-dan-menu-konteks)
+  - [Integrasi dengan `main.js`](#integrasi-dengan-mainjs)
+  - [`mainWindowLayout`](#mainwindowlayout)
+  - [`buildContextMenuTemplate(ctx)`](#buildcontextmenutemplatectx)
+- [Menu konteks & `electron/components`](#menu-konteks--electroncomponents)
+- [Build & keamanan](#build--keamanan)
+- [Lisensi](#lisensi)
+
+## Alur diagram kerja
+
+```mermaid
+flowchart TD
+  A[User jalankan npm run dev / npm start] --> B[Electron main process: electron/main.js]
+  B --> C[Start Express server: server.js]
+  C --> D[Load config.js: baseUrl + port]
+  B --> E[Buat BrowserWindow]
+  E --> F[Load index.html dari baseUrl]
+  F --> G[Renderer jalankan App.js + Nexa.js]
+  G --> H[Route ke templates/* + assets/*]
+  E --> I[Klik kanan halaman]
+  I --> J[buildContextMenuTemplate di electron/electronShell.js]
+  J --> K[IPC context-menu-clicked]
+  K --> L[App.js -> electron/components/<role>.js]
+```
+
+## Struktur proyek
+
+```text
+eletronDev/
+├─ electron/
+│  ├─ main.js
+│  ├─ preload.js
+│  ├─ csp.js
+│  ├─ electronShell.js
+│  └─ components/
+├─ assets/
+│  └─ modules/
+├─ templates/
+├─ index.html
+├─ App.js
+├─ server.js
+├─ config.js
+├─ electron.js
+└─ package.json
+```
+
 ## Arsitektur singkat
 
 | Lapisan | Peran |
@@ -80,9 +140,56 @@ npm install
 | `electron/csp.js` | Membangun string CSP; diimpor oleh **`server.js`**. |
 | `server.js` | Express: middleware, static root, `/assets`, **`/nexa-context/`** → `electron/components/`, API `/api/*`, blokir **`/electron/`** (keamanan; bukan modul menu). |
 | `electron/preload.js` | `contextBridge`: menu konteks (`electronAPI.onContextMenuClick`, dll.). |
-| `electron/electronShell.js` | Shell aplikasi: `mainWindowLayout` + `buildContextMenuTemplate` (ESM; di dev dimuat ulang tiap klik kanan / jendela baru). |
+| `electron/electronShell.js` | Shell aplikasi: `mainWindowLayout` + `buildContextMenuTemplate` (**CommonJS**; di dev dimuat ulang tiap klik kanan / layout jendela baru — lihat bagian di bawah). |
 | `index.html` | Shell SPA; `<base href="/">`; memuat `Nexa.js` dan `App.js`. |
 | `App.js` | `NXUI.Page` — rute, endpoint; import **`/nexa-context/index.js`**; listener IPC menu konteks memanggil **`components(role)`**. |
+
+## `electron/electronShell.js` — layout jendela dan menu konteks
+
+Berkas ini memisahkan **ukuran/opsi jendela utama** dan **struktur menu klik kanan** dari logika panjang di `main.js`. Formatnya **CommonJS** (`module.exports`); `electron/main.js` memuatnya dengan `require()` dari path yang sama folder (`electron/electronShell.js`).
+
+### Integrasi dengan `main.js`
+
+- **Mode terpaket:** shell dibaca sekali saat bootstrap; nilai layout disimpan di memori (`mainWindowLayoutResolved`), builder menu tetap dari modul yang sama.
+- **Development:** sebelum `require`, cache modul untuk `electronShell.js` dihapus (`delete require.cache[...]`) agar edit berkas langsung terasa:
+  - **`buildContextMenuTemplate`** — dipakai lagi pada **setiap** pembukaan menu konteks.
+  - **`mainWindowLayout`** — dipakai saat **`createWindow`** (jendela baru); ubahan ukuran/minimal tidak mengubah jendela yang sudah terbuka kecuali Anda buka jendela lagi atau restart app.
+
+### `mainWindowLayout`
+
+Objek ini dinormalisasi di `main.js` (`normalizeMainWindowLayout`) lalu sebagian besar kunci disalurkan ke `new BrowserWindow({ ... })` (properti `ContextMenu` disingkirkan dulu — hanya untuk switch menu).
+
+Nilai default saat ini di `electron/electronShell.js` adalah `resizable: true`, `maximizable: true`, dan `ContextMenu: true`, sehingga pengguna bisa:
+
+- mengubah ukuran jendela dengan drag tepi/corner,
+- memaksimalkan jendela dari kontrol title bar,
+- membuka menu klik kanan kustom di area halaman.
+
+| Properti | Keterangan |
+|----------|------------|
+| `width`, `height` | Ukuran awal jendela. |
+| `minWidth`, `minHeight` | Batas minimum resize. |
+| `maxWidth`, `maxHeight`, `x`, `y`, `center`, `title` | Opsional; ikut diteruskan jika diset di objek. |
+| `resizable`, `minimizable`, `maximizable`, `closable`, `fullscreenable`, `alwaysOnTop` | Perilaku jendela (boolean/opsi Electron). |
+| **`ContextMenu`** | `true` (default): pasang menu konteks kustom dari template di bawah. `false`: peristiwa `context-menu` dicegah — tidak ada menu Chromium bawaan dan tidak ada menu kustom. |
+
+Jika suatu kunci tidak ada di `electronShell.js`, `main.js` mengisi dari default internal (selaras dengan nilai default di berkas shell).
+
+### `buildContextMenuTemplate(ctx)`
+
+Fungsi yang mengembalikan array **template menu** untuk `Menu.buildFromTemplate` (API Electron). Parameter `ctx` disiapkan oleh `main.js`:
+
+| Properti di `ctx` | Peran |
+|-------------------|--------|
+| `getMainWindow` | Mengembalikan `BrowserWindow` utama (untuk zoom, URL, dll.). |
+| `isDev` | `true` jika app tidak terpaket atau `NODE_ENV=development` atau `ELECTRON_DEV=1` — menambahkan item **Developer Tools** dan **Inspect Element** (Inspect memakai `contextMenuParams.x` / `y`). |
+| `clearCacheAndNotify` | Dipanggil oleh item **Bersihkan Cache** (HTTP cache + storage; bisa mengirim `cache-cleared` ke renderer). |
+| `showAboutDialog` | Dialog **Tentang** (nama/versi dari `package.json`). |
+| `contextMenuParams` | Objek parameter event konteks dari Electron (untuk `inspectElement`). |
+
+**Struktur menu bawaan** (ringkas): **Refresh** → (dev: DevTools, Inspect) → pemisah → **Bersihkan Cache** → **Layar Penuh** → pemisah → **halaman** (mengirim `webContents.send('context-menu-clicked', { role: 'nexaTerminal', url, ... })`) → submenu **Setting** (zoom normal / perbesar / perkecil) → submenu **Jendela** (minimize, tutup) → submenu **Bantuan** → **Tentang**.
+
+Untuk perilaku di sisi SPA, salinlah pola item **halaman**: kirim channel **`context-menu-clicked`** dengan objek yang memuat **`role`**; renderer menanganinya lewat preload (`electronAPI.onContextMenuClick`) dan **`electron/components/<role>.js`** (sajian lewat `/nexa-context/`). Detail alur ada di bagian berikutnya.
 
 ## Menu konteks & `electron/components`
 
