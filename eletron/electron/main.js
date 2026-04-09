@@ -7,7 +7,7 @@ const path = require('path');
 
 /**
  * APP_ROOT: folder proyek (dev: induk electron/). Terpaket: app.asar (package.json, index.js, node_modules, assets/…).
- * Folder electron/ (main.js, electronShell.js, …) di resources/electron lewat extraResources.
+ * Folder electron/ dipaketkan ke app.asar; bootstrap mendukung fallback resources/electron untuk build lama.
  */
 const APP_ROOT = app.isPackaged ? app.getAppPath() : path.join(__dirname, '..');
 const ELECTRON_SHELL_JS = path.join(__dirname, 'electronShell.js');

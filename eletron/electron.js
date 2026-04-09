@@ -22,10 +22,15 @@ if (!app.isPackaged) {
   app.setPath('userData', devUserData);
 }
 
-const electronDir = app.isPackaged
-  ? path.join(process.resourcesPath, 'electron')
-  : path.join(__dirname, 'electron');
-const extMain = path.join(electronDir, 'main.js');
+const extMainCandidates = app.isPackaged
+  ? [
+      // Build baru: electron/ ikut files dan berada di app.asar
+      path.join(app.getAppPath(), 'electron', 'main.js'),
+      // Build lama: electron/ disalin ke resources/electron (extraResources)
+      path.join(process.resourcesPath, 'electron', 'main.js'),
+    ]
+  : [path.join(__dirname, 'electron', 'main.js')];
+const extMain = extMainCandidates.find((p) => fs.existsSync(p)) || extMainCandidates[0];
 
 if (!fs.existsSync(extMain)) {
   app.whenReady().then(() => {

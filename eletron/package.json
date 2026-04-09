@@ -53,10 +53,9 @@
     },
     "files": [
       "**/*",
-      "!electron/**",
       "!scripts/**",
-      "electron/csp.js",
-      "electron/components/**/*",
+      "!electron/build/**",
+      "!electron/clean-dist.js",
       "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
       "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
       "!**/node_modules/*.d.ts",
@@ -89,18 +88,6 @@
       "allowElevation": true
     },
     "compression": "maximum",
-    "asar": true,
-    "extraResources": [
-      {
-        "from": "electron",
-        "to": "electron",
-        "filter": [
-          "**/*",
-          "!build/**",
-          "!clean-dist.js",
-          "!components/**"
-        ]
-      }
-    ]
+    "asar": true
   }
 }

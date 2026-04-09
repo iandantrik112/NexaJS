@@ -1,8 +1,14 @@
 {
-  "name": "NexaExpress",
-  "version": "1.0.5",
+  "name": "nexareact",
+  "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "check:nexajs-imports": "node ./assets/modules/NexaReact/NexaJSImports.mjs",
+    "precommit": "npm run check:nexajs-imports",
+    "prestart": "npm run check:nexajs-imports",
+    "preandroid": "npm run check:nexajs-imports",
+    "preios": "npm run check:nexajs-imports",
+    "preweb": "npm run check:nexajs-imports",
     "start": "expo start --port 9005",
     "start:clear": "expo start --port 9005 --clear",
     "start:show": "node show-expo-url.js && expo start --port 9005",
@@ -13,7 +19,8 @@
     "android:build": "cd android && gradlew.bat assembleRelease",
     "android:build:bundle": "cd android && gradlew.bat bundleRelease",
     "ios": "expo run:ios",
-    "web": "expo start --web --host --port 9005"
+    "web": "expo start --web --host --port 9005",
+    "prepare": "husky"
   },
   "dependencies": {
     "@expo-google-fonts/montserrat": "^0.2.3",
@@ -45,7 +52,7 @@
     "expo-status-bar": "~3.0.8",
     "expo-video": "~2.0.0",
     "lodash": "^4.17.21",
-    "NexaUI": "file:./package",
+    "NexaJS": "file:./assets/modules",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
@@ -68,7 +75,8 @@
     "@babel/core": "^7.20.0",
     "@react-native-community/cli": "^12.3.5",
     "babel-preset-expo": "~54.0.0",
-    "expo-build-properties": "^1.0.10"
+    "expo-build-properties": "^1.0.10",
+    "husky": "^9.1.7"
   },
   "private": true
 }

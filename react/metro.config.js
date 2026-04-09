@@ -1,8 +1,12 @@
 // Learn more https://docs.expo.io/guides/customizing-metro
+const path = require('path');
 const { getDefaultConfig } = require('expo/metro-config');
 
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
+
+/** Paket lokal `file:./package` — mapping eksplisit agar Metro selalu menemukan NexaUI (npm start & Electron `[nexa-expo]`). */
+const nexaUIPackageRoot = path.resolve(__dirname, 'package');
 
 // Enable Fast Refresh
 config.server = {
@@ -18,6 +22,10 @@ config.watchFolders = [__dirname];
 // Konfigurasi resolver
 config.resolver = {
   ...config.resolver,
+  extraNodeModules: {
+    ...(config.resolver?.extraNodeModules || {}),
+    NexaUI: nexaUIPackageRoot,
+  },
   sourceExts: [...(config.resolver?.sourceExts || []), 'jsx', 'js', 'ts', 'tsx'],
   // Block expo-sqlite untuk web platform (mencegah WASM error)
   // expo-sqlite memerlukan WebAssembly yang tidak didukung di web bundler
